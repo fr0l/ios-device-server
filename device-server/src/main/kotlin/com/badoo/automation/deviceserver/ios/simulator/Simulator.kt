@@ -613,6 +613,7 @@ class Simulator (
     //endregion
 
     override fun uninstallApplication(bundleId: String) {
-        remote.fbsimctl.uninstallApp(udid, bundleId)
+        logger.debug(logMarker, "Uninstalling aplication $bundleId from Simulator $this")
+        remote.execIgnoringErrors(listOf("xcrun", "simctl", "uninstall", udid, bundleId))
     }
 }
