@@ -15,7 +15,7 @@ import com.badoo.automation.deviceserver.ios.simulator.data.FileSystem
 import com.badoo.automation.deviceserver.ios.simulator.video.SimulatorVideoRecorder
 import com.badoo.automation.deviceserver.util.executeWithTimeout
 import com.badoo.automation.deviceserver.util.pollFor
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.*
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
@@ -31,16 +31,16 @@ import kotlin.concurrent.withLock
 import kotlin.system.measureTimeMillis
 
 class Simulator (
-        private val deviceRef: DeviceRef,
-        private val remote: IRemote,
-        deviceInfo: DeviceInfo,
-        private val allocatedPorts: DeviceAllocatedPorts,
-        private val deviceSetPath: String,
-        wdaRunnerXctest: File,
-        private val concurrentBootsPool: ThreadPoolDispatcher,
-        headless: Boolean,
-        private val useWda: Boolean,
-        override val fbsimctlSubject: String
+    private val deviceRef: DeviceRef,
+    private val remote: IRemote,
+    deviceInfo: DeviceInfo,
+    private val allocatedPorts: DeviceAllocatedPorts,
+    private val deviceSetPath: String,
+    wdaRunnerXctest: File,
+    private val concurrentBootsPool: ExecutorCoroutineDispatcher,
+    headless: Boolean,
+    private val useWda: Boolean,
+    override val fbsimctlSubject: String
 ) : ISimulator
 {
     private companion object {
@@ -197,7 +197,7 @@ class Simulator (
 
     private fun boot() {
         logger.info(logMarker, "Booting ${this@Simulator} asynchronously")
-        val bootJob = async(context = concurrentBootsPool) {
+        val bootJob = CoroutineScope(concurrentBootsPool).async {
             truncateSystemLogIfExists()
 
             logger.info(logMarker, "Starting fbsimctl on ${this@Simulator}")
@@ -337,7 +337,7 @@ class Simulator (
 
     //region helper functions — execute critical and async
     private fun executeCriticalAsync(function: (context: CoroutineScope) -> Unit) {
-        criticalAsyncPromise = launch(context = simulatorsThreadPool) {
+        criticalAsyncPromise = CoroutineScope(simulatorsThreadPool).launch {
             executeCritical {
                 function(this)
             }

@@ -151,8 +151,8 @@ class DevicesNode(
     }
 
     override fun createDeviceAsync(desiredCaps: DesiredCapabilities): DeviceDTO {
-        var slot: DeviceSlot? = null
-        var ref: DeviceRef? = null
+        var slot: DeviceSlot?
+        var ref: DeviceRef?
 
         synchronized(this) {
             slot = slots.reserve(desiredCaps)

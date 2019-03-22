@@ -8,9 +8,10 @@ import com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesExce
 import com.badoo.automation.deviceserver.host.management.errors.NoNodesRegisteredException
 import com.badoo.automation.deviceserver.ios.ActiveDevices
 import com.badoo.automation.deviceserver.ios.simulator.simulatorsThreadPool
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
@@ -92,7 +93,7 @@ class NodeRegistry(val activeDevices: ActiveDevices = ActiveDevices()) {
 
     fun dispose() {
         //FIXME: Do proper clean up on server exit
-        val list: List<Job> = nodeWrappers.map { launch(simulatorsThreadPool) { it.stop() } }
+        val list: List<Job> = nodeWrappers.map { CoroutineScope(simulatorsThreadPool).launch { it.stop() } }
         runBlocking { list.forEach { it.join() } }
         nodeWrappers.clear()
     }

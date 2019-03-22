@@ -6,7 +6,7 @@ import com.badoo.automation.deviceserver.data.DeviceRef
 import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlDevice
 import com.badoo.automation.deviceserver.ios.simulator.ISimulator
 import com.badoo.automation.deviceserver.ios.simulator.Simulator
-import kotlinx.coroutines.experimental.ThreadPoolDispatcher
+import kotlinx.coroutines.ExecutorCoroutineDispatcher
 import java.io.File
 
 interface ISimulatorFactory {
@@ -17,7 +17,7 @@ interface ISimulatorFactory {
             ports: DeviceAllocatedPorts,
             deviceSetPath: String,
             wdaRunnerXctest: File,
-            concurrentBoot: ThreadPoolDispatcher,
+            concurrentBoot: ExecutorCoroutineDispatcher,
             headless: Boolean,
             useWda: Boolean,
             fbsimctlSubject: String

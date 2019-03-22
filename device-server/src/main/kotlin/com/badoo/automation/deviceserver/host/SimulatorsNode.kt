@@ -9,9 +9,10 @@ import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.errors.OverCapacityException
 import com.badoo.automation.deviceserver.ios.simulator.ISimulator
 import com.badoo.automation.deviceserver.ios.simulator.simulatorsThreadPool
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.newFixedThreadPoolContext
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newFixedThreadPoolContext
+import kotlinx.coroutines.runBlocking
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -149,7 +150,7 @@ class SimulatorsNode(
         logger.info(logMarker, "Finalising simulator pool for ${remote.hostName}")
 
         val disposeJobs = devicePool.map {
-            launch(context = simulatorsThreadPool) {
+            CoroutineScope(simulatorsThreadPool).launch {
                 try {
                     it.value.release("Finalising pool for ${remote.hostName}")
                 } catch (e: Throwable) {
