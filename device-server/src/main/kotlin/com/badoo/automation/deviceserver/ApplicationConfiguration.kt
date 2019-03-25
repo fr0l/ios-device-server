@@ -16,4 +16,5 @@ class ApplicationConfiguration {
             ?: throw RuntimeException("Must set system property: -D$deviceServerConfigPathProperty=./config/.device_config")
 
     val fbsimctlVersion: String = System.getProperty("fbsimctl.version", "HEAD-d30c2a73")
+    val trustStorePath: String = System.getProperty("trust.store.path", "")
 }
