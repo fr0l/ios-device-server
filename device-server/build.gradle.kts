@@ -1,9 +1,19 @@
-import org.gradle.internal.impldep.aQute.bnd.build.Run
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
-plugins {
-    id("org.jetbrains.kotlin.jvm").version("1.3.21")
+buildscript {
+    repositories {
+        maven {
+            url = uri("https://plugins.gradle.org/m2/")
+        }
+    }
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.21")
+    }
+}
 
+apply(plugin = "org.jetbrains.kotlin.jvm")
+
+plugins {
     application
 }
 
