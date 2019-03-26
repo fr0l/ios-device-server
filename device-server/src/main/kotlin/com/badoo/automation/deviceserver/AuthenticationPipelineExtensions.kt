@@ -2,6 +2,7 @@ package com.badoo.automation.deviceserver
 
 import io.ktor.application.call
 import io.ktor.auth.*
+import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.request.ApplicationRequest
 import io.ktor.response.respond
 
@@ -54,4 +55,3 @@ fun ApplicationRequest.bearerAuthenticationToken(): String? {
         else -> return null
     }
 }
-

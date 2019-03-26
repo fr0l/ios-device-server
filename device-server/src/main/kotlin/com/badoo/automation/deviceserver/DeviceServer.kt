@@ -16,10 +16,7 @@ import io.ktor.application.Application
 import io.ktor.application.ApplicationCall
 import io.ktor.application.call
 import io.ktor.application.install
-import io.ktor.auth.UnauthorizedResponse
-import io.ktor.auth.UserIdPrincipal
-import io.ktor.auth.authentication
-import io.ktor.auth.principal
+import io.ktor.auth.*
 import io.ktor.features.CallLogging
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.DefaultHeaders
@@ -33,6 +30,7 @@ import io.ktor.response.respondText
 import io.ktor.routing.*
 import io.ktor.server.engine.ApplicationEngineEnvironmentReloading
 import io.ktor.server.engine.ShutDownUrl
+import kotlinx.coroutines.io.jvm.javaio.toInputStream
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.NetworkInterface
@@ -41,12 +39,12 @@ import java.util.*
 typealias EmptyMap = Map<Unit, Unit>
 
 private fun jsonContent(call: ApplicationCall): JsonNode {
-    val json = call.request.receiveContent().inputStream()
+    val json = call.request.receiveChannel().toInputStream()
     return JsonMapper().readTree(json)
 }
 
 private inline fun <reified T> jsonContent(call: ApplicationCall): T {
-    return JsonMapper().fromJson(call.request.receiveContent().inputStream())
+    return JsonMapper().fromJson(call.request.receiveChannel().toInputStream())
 }
 
 private fun param(call: ApplicationCall, s: String): String {
@@ -124,15 +122,20 @@ fun Application.module() {
         exitCodeSupplier = { 1 }
     }
 
-    authentication {
-        bearerAuthentication("default") { token ->
-            val name = Base64.getDecoder().decode(token).toString(Charsets.ISO_8859_1)
-            when {
-                name.isEmpty() -> null
-                else -> UserIdPrincipal(name)
+    install(Authentication) {
+        provider("Bearer") {
+            pipeline.bearerAuthentication("default") { token ->
+                val name = Base64.getDecoder().decode(token).toString(Charsets.ISO_8859_1)
+                when {
+                    name.isEmpty() -> null
+                    else -> UserIdPrincipal(name)
+                }
             }
         }
-        anonymousAuthentication()
+
+        provider("Anonymous") {
+            pipeline.anonymousAuthentication()
+        }
     }
 
     logger.info("Server: Installing routing...")
