@@ -9,6 +9,7 @@ declare -r WDA_RUNNER=${DEVICE_SERVER_WDA_SIMULATOR_RUNNER:-'../ios/facebook/sim
 declare -r WDA_DEVICE_RUNNER=${DEVICE_SERVER_WDA_DEVICE_RUNNER:-'../ios/facebook/devices/WebDriverAgentRunner-Runner.app'}
 declare -r FBSIMCTL_VERSION=${DEVICE_SERVER_FBSIMCTL_VERSION:-'HEAD-d30c2a73'}
 declare -r LOG_CONFIG=${DEVICE_SERVER_LOG_CONFIG:-'logback-test.xml'}
+declare -r SIMULATOR_TRUST_STORE_PATH=${SIMULATOR_TRUST_STORE_PATH:-''}
 
 export JAVA_HOME=$(/usr/libexec/java_home -v 10 -F || /usr/libexec/java_home -v 9 -F)
 
@@ -22,4 +23,6 @@ exec java \
     -Dwda.bundle.path=${WDA_RUNNER} \
     -Dwda.device.bundle.path=${WDA_DEVICE_RUNNER} \
     -Dfbsimctl.version=${FBSIMCTL_VERSION} \
+    -Dtrust.store.path=${SIMULATOR_TRUST_STORE_PATH} \
+    -Dio.netty.tryReflectionSetAccessible=false \
     -jar ${DEVICE_SERVER_JAR}

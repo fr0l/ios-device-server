@@ -5,22 +5,27 @@ import io.ktor.auth.*
 import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.request.ApplicationRequest
 import io.ktor.response.respond
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class AnonymousPrincipal : Principal
 
-private fun HttpAuthHeader.Companion.bearerAuthChallenge(realm: String): HttpAuthHeader =
+fun HttpAuthHeader.Companion.bearerAuthChallenge(realm: String): HttpAuthHeader =
         HttpAuthHeader.Parameterized("Bearer", mapOf(HttpAuthHeader.Parameters.Realm to realm))
 
 fun AuthenticationPipeline.anonymousAuthentication() {
     intercept(AuthenticationPipeline.RequestAuthentication) { context ->
+        logger.warn("Bearer Authentication try with anonymous")
         if (context.principal == null) {
             context.principal(AnonymousPrincipal())
         }
     }
 }
-
+private val logger = LoggerFactory.getLogger("AuthenticationShit ")
 fun AuthenticationPipeline.bearerAuthentication(realm: String, validate: suspend (String) -> UserIdPrincipal?) {
     intercept(AuthenticationPipeline.RequestAuthentication) { context ->
+        logger.warn("Bearer Authentication bearerAuthentication")
+
         val credentials = call.request.bearerAuthenticationToken()
         val principal = credentials?.let { validate(it) }
 

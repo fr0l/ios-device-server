@@ -23,6 +23,7 @@ import io.ktor.features.DefaultHeaders
 import io.ktor.features.StatusPages
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.auth.HttpAuthHeader
 import io.ktor.jackson.jackson
 import io.ktor.request.uri
 import io.ktor.response.respond
@@ -122,19 +123,52 @@ fun Application.module() {
         exitCodeSupplier = { 1 }
     }
 
-    install(Authentication) {
+    fun validate(token: String): Principal? {
+        logger.warn("Bearer Authentication try with token $token")
+        val name = Base64.getDecoder().decode(token).toString(Charsets.ISO_8859_1)
+        return when {
+            name.isEmpty() -> null
+            else -> UserIdPrincipal(name)
+        }
+    }
+
+    authentication {
+        logger.warn("Configuring Authentication")
         provider("Bearer") {
-            pipeline.bearerAuthentication("default") { token ->
-                val name = Base64.getDecoder().decode(token).toString(Charsets.ISO_8859_1)
-                when {
-                    name.isEmpty() -> null
-                    else -> UserIdPrincipal(name)
+            logger.warn("Adding Bearer Authentication provider")
+            pipeline.intercept(AuthenticationPipeline.RequestAuthentication) { context ->
+                logger.warn("Bearer Authentication bearerAuthentication")
+
+                val credentials = call.request.bearerAuthenticationToken()
+                val principal = credentials?.let { validate(it) }
+
+                val cause = when {
+                    credentials == null -> AuthenticationFailedCause.NoCredentials
+                    principal == null -> AuthenticationFailedCause.InvalidCredentials
+                    else -> null
                 }
+
+                if (cause != null) {
+                    context.challenge("Bearer", cause) {
+                        call.respond(UnauthorizedResponse(HttpAuthHeader.bearerAuthChallenge("default")))
+                        it.complete()
+                    }
+                }
+                if (principal != null) {
+                    context.principal(principal)
+                }
+                logger.warn("Bearer Authentication bearerAuthentication principal = $principal")
             }
         }
 
         provider("Anonymous") {
-            pipeline.anonymousAuthentication()
+            logger.warn("Adding Anonymous Authentication provider")
+            pipeline.intercept(AuthenticationPipeline.RequestAuthentication) { context ->
+                logger.warn("Bearer Authentication try with anonymous")
+                if (context.principal == null) {
+                    context.principal(AnonymousPrincipal())
+                }
+            }
         }
     }
 
@@ -157,11 +191,11 @@ fun Application.module() {
                 call.respond(devicesController.getDeviceRefs())
             }
             post {
-                val user = call.principal<UserIdPrincipal>()
+                val user = UserIdPrincipal("SmallAndSpeedyF")
                 call.respond(devicesController.createDevice(jsonContent<DesiredCapabilities>(call), user))
             }
             delete {
-                val user = call.principal<UserIdPrincipal>()
+                val user = UserIdPrincipal("SmallAndSpeedyF")
                 if (user == null) {
                     call.respond(UnauthorizedResponse())
                 } else {
