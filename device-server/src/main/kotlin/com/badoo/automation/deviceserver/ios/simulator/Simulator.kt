@@ -47,8 +47,8 @@ class Simulator (
 ) : ISimulator
 {
     private companion object {
-        private val PREPARE_TIMEOUT: Duration = Duration.ofMinutes(4)
-        private val RESET_TIMEOUT: Duration = Duration.ofMinutes(3)
+        private val PREPARE_TIMEOUT: Duration = Duration.ofMinutes(6)
+        private val RESET_TIMEOUT: Duration = Duration.ofMinutes(6)
         private const val SAFARI_BUNDLE_ID = "com.apple.mobilesafari"
     }
 
@@ -196,7 +196,7 @@ class Simulator (
         healthChecker?.cancel()
     }
 
-    private fun startWdaWithRetry(pollTimeout: Duration = Duration.ofSeconds(30), retryInterval: Duration = Duration.ofSeconds(3)) {
+    private fun startWdaWithRetry(pollTimeout: Duration = Duration.ofSeconds(60), retryInterval: Duration = Duration.ofSeconds(3)) {
         val maxRetries = 3
 
         for (attempt in 1..maxRetries) {

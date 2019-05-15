@@ -106,10 +106,21 @@ class SimulatorBackup(
     //endregion
 
     override fun restore() {
-        remote.execIgnoringErrors(listOf("rm", "-rf", srcPath))
-        val result = remote.execIgnoringErrors(listOf("cp", "-R", backupPath, srcPath))
+        val rmResult = remote.execIgnoringErrors(listOf("rm", "-rf", srcPath), timeOutSeconds = 90)
 
-        ensureSuccess(result, "$this failed to restore from backup $backupPath: $result")
+        if (!rmResult.isSuccess) {
+            val debugResult = remote.execIgnoringErrors(listOf("lsof", "-O", "-n", "-l", "-P", "+D", srcPath), timeOutSeconds = 300)
+            logger.error(logMarker, "Failed to rm -rf $srcPath . Running lsof: $debugResult")
+        }
+
+        val cpResult = remote.execIgnoringErrors(listOf("cp", "-R", backupPath, srcPath), timeOutSeconds = 90)
+
+        if (!cpResult.isSuccess) {
+            val debugResult = remote.execIgnoringErrors(listOf("lsof", "-O", "-n", "-l", "-P", "+D", srcPath), timeOutSeconds = 300)
+            logger.error(logMarker, "Failed to cp -R $srcPath . Running lsof: $debugResult")
+        }
+
+        ensureSuccess(cpResult, "$this failed to restore from backup $backupPath: $cpResult")
         logger.debug(logMarker, "Restored simulator $udid from backup at path: [$backupPath]")
     }
 
