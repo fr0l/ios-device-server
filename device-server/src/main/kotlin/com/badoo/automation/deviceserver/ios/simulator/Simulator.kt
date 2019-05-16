@@ -278,7 +278,7 @@ class Simulator (
 
             try {
                 pollFor(
-                    Duration.ofSeconds(60),
+                    Duration.ofSeconds(90),
                     reasonName = "${this@Simulator} initial boot",
                     shouldReturnOnTimeout = false,
                     logger = logger,
