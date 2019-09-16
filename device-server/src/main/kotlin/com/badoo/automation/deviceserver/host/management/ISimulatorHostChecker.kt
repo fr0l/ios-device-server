@@ -1,5 +1,6 @@
 package com.badoo.automation.deviceserver.host.management
 
+import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.host.IRemote
 import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctl
@@ -17,7 +18,6 @@ interface ISimulatorHostChecker {
     fun setupHost()
     fun killDiskCleanupThread()
     fun copyWdaBundleToHost()
-    val isWdaBundleDeployed: Boolean
 }
 
 class SimulatorHostChecker(
@@ -28,9 +28,6 @@ class SimulatorHostChecker(
         private val fbsimctlVersion: String,
         private val shutdownSimulators: Boolean
 ) : ISimulatorHostChecker {
-    override val isWdaBundleDeployed: Boolean
-        get() = remote.execIgnoringErrors(listOf("test", "-d", remoteWdaBundleRoot.absolutePath)).isSuccess
-
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
     private val logMarker = MapEntriesAppendingMarker(mapOf(
             LogMarkers.HOSTNAME to remote.hostName
@@ -40,11 +37,9 @@ class SimulatorHostChecker(
 
     override fun copyWdaBundleToHost() {
         logger.debug(logMarker, "Setting up remote node: copying WebDriverAgent to node ${remote.hostName}")
-        remote.rsync(
-            wdaBundle.absolutePath,
-            remoteWdaBundleRoot.absolutePath,
-            setOf("-r", "--delete")
-        )
+        remote.rm(remoteWdaBundleRoot.absolutePath, Duration.ofMinutes(1))
+        remote.execIgnoringErrors(listOf("/bin/mkdir", "-p", remoteWdaBundleRoot.absolutePath))
+        remote.scpToRemoteHost(wdaBundle.absolutePath, remoteWdaBundleRoot.absolutePath, Duration.ofMinutes(1))
     }
 
     override fun killDiskCleanupThread() {
@@ -77,49 +72,61 @@ class SimulatorHostChecker(
     }
 
     override fun cleanup() {
+        try {
+            logger.info(logMarker, "Will shutdown booted simulators")
+            remote.fbsimctl.shutdownAllBooted()
+            logger.info(logMarker, "Done shutting down booted simulators")
+            logger.info(logMarker, "Will kill abandoned long living fbsimctl processes")
+            remote.pkill("/usr/local/bin/fbsimctl", true)
+        } catch (e: Exception) {
+            logger.warn(logMarker, "Failed to shutdown simulator because: ${e.javaClass}: message: [${e.message}]")
+        }
+
         if (shutdownSimulators) {
             cleanupSimulators()
             cleanupSimulatorServices()
         }
 
-        try {
-            logger.info(logMarker, "Will kill abandoned long living fbsimctl processes")
-            remote.pkill("/usr/local/bin/fbsimctl", true)
-            logger.info(logMarker, "Will shutdown booted simulators")
-            remote.fbsimctl.shutdownAllBooted()
-            logger.info(logMarker, "Done shutting down booted simulators")
-        } catch (e: Exception) {
-            logger.warn(logMarker, "Failed to shutdown simulator because: ${e.javaClass}: message: [${e.message}]")
-        }
-
         val deviceSetsPath = remote.fbsimctl.defaultDeviceSet()
         check(!deviceSetsPath.isBlank()) { "Device sets must not be blank" } // fbsimctl.defaultDeviceSet will throw if empty. but paranoid mode on.
 
+        removeOldFiles("/private/var/folders/*/*/*/app_bundle_cache.*", 0) // remove local caches
+        removeOldFiles(ApplicationConfiguration().appBundleCacheRemotePath.absolutePath, 0) // remove local caches
+
+        // TODO: Use $TMPDIR instead of /private/var/folders/*/*/*
         val caches = listOf(
                 "/private/var/folders/*/*/*/*-*-*/*.app",
                 "/private/var/folders/*/*/*/fbsimctl-*",
+                "/var/folders/*/*/*/videoRecording_*",
+                "/private/var/folders/*/*/*/videoRecording_*",
                 "$deviceSetsPath/*/data/Library/Caches/com.apple.mobile.installd.staging/*/*.app"
         )
 
-        val cleanUpRunnable: Runnable = object : Runnable {
-            override fun run() {
-                caches.forEach {
-                    try {
-                        val r = remote.shell("find $it -maxdepth 0 -mmin +60 -exec rm -rf {} \\;", returnOnFailure = true) // find returns non zero if nothing found
-                        if (!r.isSuccess || r.stdErr.isNotEmpty() || r.stdOut.isNotEmpty()) {
-                            logger.debug(logMarker, "[disc cleaner] $this returned non-empty. Result stdErr: ${r.stdErr}")
-                        }
-                    } catch (e: RuntimeException) {
-                        logger.debug(logMarker, "[disc cleaner] $this got exception while cleaning caches: ${e.message}", e)
-                    }
-                }
+        val cleanUpRunnable = Runnable {
+            caches.forEach { path ->
+                removeOldFiles(path, 120)
             }
         }
+
         cleanUpTask = periodicTasksPool.scheduleWithFixedDelay(
                 cleanUpRunnable,
                 0,
                 diskCleanupInterval.toMinutes(),
                 TimeUnit.MINUTES)
+    }
+
+    private fun removeOldFiles(path: String, minutes: Int) {
+        try {
+            val r = remote.shell(
+                "find $path -maxdepth 0 -mmin +$minutes -exec rm -rf {} \\;",
+                returnOnFailure = true
+            ) // find returns non zero if nothing found
+            if (!r.isSuccess && r.exitCode != 1 && (r.stdErr.trim().isNotEmpty() || r.stdOut.trim().isNotEmpty())) {
+                logger.debug(logMarker, "[disc cleaner] @ ${remote.publicHostName} returned non-empty. Result: ${r}")
+            }
+        } catch (e: RuntimeException) {
+            logger.debug(logMarker, "[disc cleaner] $this got exception while cleaning caches: ${e.message}", e)
+        }
     }
 
     private fun cleanupSimulators() {

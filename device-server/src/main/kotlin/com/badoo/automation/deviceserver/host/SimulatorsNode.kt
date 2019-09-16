@@ -1,23 +1,30 @@
 package com.badoo.automation.deviceserver.host
 
+import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers.Companion.DEVICE_REF
 import com.badoo.automation.deviceserver.LogMarkers.Companion.HOSTNAME
 import com.badoo.automation.deviceserver.LogMarkers.Companion.UDID
 import com.badoo.automation.deviceserver.data.*
+import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.host.management.ISimulatorHostChecker
 import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.errors.OverCapacityException
 import com.badoo.automation.deviceserver.ios.simulator.ISimulator
 import com.badoo.automation.deviceserver.ios.simulator.simulatorsThreadPool
+import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.deviceRefFromUDID
 import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.newFixedThreadPoolContext
 import kotlinx.coroutines.experimental.runBlocking
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URL
-import java.util.concurrent.ConcurrentHashMap
+import java.time.Duration
+import java.util.*
+import java.util.concurrent.*
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.collections.HashMap
+import kotlin.system.measureNanoTime
 
 class SimulatorsNode(
         val remote: IRemote,
@@ -26,20 +33,79 @@ class SimulatorsNode(
         private val simulatorLimit: Int,
         concurrentBoots: Int,
         private val wdaRunnerXctest: File,
-        private val simulatorProvider: ISimulatorProvider = SimulatorProvider(remote),
+        private val applicationConfiguration: ApplicationConfiguration = ApplicationConfiguration(),
+        private val simulatorProvider: SimulatorProvider = SimulatorProvider(remote, applicationConfiguration.simulatorBackupPath),
         private val portAllocator: PortAllocator = PortAllocator(),
-        private val simulatorFactory: ISimulatorFactory = object : ISimulatorFactory {}
+        private val simulatorFactory: ISimulatorFactory = object : ISimulatorFactory {},
+        private val locationPermissionsLock: ReentrantLock = ReentrantLock(true)
 ) : ISimulatorsNode {
+    private val appBinariesCache: MutableMap<String, File> = ConcurrentHashMap(200)
+    private val simulatorsBootExecutorService: ExecutorService = Executors.newFixedThreadPool(simulatorLimit)
+    private val concurrentBoot: ExecutorService = Executors.newFixedThreadPool(concurrentBoots)
+    private val prepareTasks = ConcurrentHashMap<String, Future<*>>()
+
+    override fun updateApplicationPlist(ref: DeviceRef, plistEntry: PlistEntryDTO) {
+        val applicationContainer = getDeviceFor(ref).applicationContainer(plistEntry.bundleId)
+        val path = File(plistEntry.file_name).toPath()
+        val key = plistEntry.key
+        val value = plistEntry.value
+
+        if (plistEntry.command == "set") {
+            applicationContainer.setPlistValue(path, key, value)
+        } else {
+            val type = plistEntry.type ?: throw RuntimeException("Unable to add new property $key as it requires value type.")
+            applicationContainer.addPlistValue(path, key, value, type)
+        }
+    }
+    private val appInstaller: AppInstaller = AppInstaller(remote)
+
+    override fun installApplication(deviceRef: DeviceRef, appBundleDto: AppBundleDto) {
+        logger.info(logMarker, "Ready to install app ${appBundleDto.appUrl} on device $deviceRef")
+        val appBinaryPath = appBinariesCache[appBundleDto.appUrl]
+            ?: throw RuntimeException("Unable to find requested binary. Deploy binary first from url ${appBundleDto.appUrl}")
+
+        val device: ISimulator = getDeviceFor(deviceRef)
+        device.installApplication(appInstaller, appBundleDto.appUrl, appBinaryPath)
+    }
+
+    override fun appInstallationStatus(deviceRef: DeviceRef): Map<String, Boolean> {
+        return getDeviceFor(deviceRef).appInstallationStatus()
+    }
+
+    override fun deployApplication(appBundle: ApplicationBundle) {
+        val appDirectory = if (remote.isLocalhost()) {
+            appBundle.appDirectory!!
+        } else {
+            copyAppToRemoteHost(appBundle)
+        }
+        val key = appBundle.appUrl.toExternalForm()
+        appBinariesCache[key] = appDirectory
+    }
+
+    private fun copyAppToRemoteHost(appBundle: ApplicationBundle): File {
+        val marker = MapEntriesAppendingMarker(mapOf(HOSTNAME to remote.publicHostName, "action_name" to "scp_application"))
+        logger.debug(marker, "Copying application ${appBundle.appUrl} to $this")
+
+        val remoteDirectory = File(applicationConfiguration.appBundleCacheRemotePath, UUID.randomUUID().toString()).absolutePath
+        remote.exec(listOf("/bin/rm", "-rf", remoteDirectory), mapOf(), false, 90).stdOut.trim()
+        remote.exec(listOf("/bin/mkdir", "-p", remoteDirectory), mapOf(), false, 90).stdOut.trim()
+
+        val nanos = measureNanoTime {
+            remote.scpToRemoteHost(appBundle.appDirectory!!.absolutePath, remoteDirectory, Duration.ofMinutes(1))
+        }
+        val seconds = TimeUnit.NANOSECONDS.toSeconds(nanos)
+        val measurement = mapOf(HOSTNAME to remote.publicHostName, "action_name" to "scp_application", "duration" to seconds)
+
+        logger.debug(MapEntriesAppendingMarker(measurement), "Successfully copied application ${appBundle.appUrl} to $this. Took $seconds seconds")
+        return File(remoteDirectory, appBundle.appDirectory!!.name)
+    }
 
     override val remoteAddress: String get() = publicHostName
 
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
     private val logMarker = MapEntriesAppendingMarker(mapOf(
-            HOSTNAME to remote.hostName
+            HOSTNAME to remote.publicHostName
     ))
-
-    override val isNodePrepared: Boolean
-        get() = remote.isLocalhost() || hostChecker.isWdaBundleDeployed
 
     override fun prepareNode() {
         logger.info(logMarker, "Preparing node ${remote.hostName}")
@@ -55,26 +121,25 @@ class SimulatorsNode(
     }
 
     private val supportedArchitectures = listOf("x86_64")
-    private val deviceSetPath: String by lazy { remote.fbsimctl.defaultDeviceSet() }
-    private val concurrentBoot = newFixedThreadPoolContext(concurrentBoots, "sim_boot_${remote.hostName}")
 
     private fun getDeviceFor(ref: DeviceRef): ISimulator {
-        return devicePool[ref]!! //FIXME: replace with explicit unwrapping
+        return createdSimulators[ref]!! //FIXME: replace with explicit unwrapping
     }
 
-    private val devicePool = ConcurrentHashMap<DeviceRef, ISimulator>()
+    private val createdSimulators = ConcurrentHashMap<DeviceRef, ISimulator>()
     private val allocatedPorts = HashMap<DeviceRef, DeviceAllocatedPorts>()
 
     override fun createDeviceAsync(desiredCaps: DesiredCapabilities): DeviceDTO {
         synchronized(this) { // FIXME: synchronize in some other place?
-            if (devicePool.size >= simulatorLimit) {
+            if (createdSimulators.size >= simulatorLimit) {
                 val message = "$this was asked for a newSimulator, but is already at capacity $simulatorLimit"
                 logger.error(logMarker, message)
                 throw OverCapacityException(message)
             }
 
-            val usedUdids = devicePool.map { it.value.udid }.toSet()
-            val fbSimctlDevice = simulatorProvider.match(desiredCaps, usedUdids)
+            val usedUdids = createdSimulators.map { it.value.udid }.toSet()
+            val fbSimctlDevice = simulatorProvider.provideSimulator(desiredCaps, usedUdids)
+
             if (fbSimctlDevice == null) {
                 val message = "$this could not construct or match a simulator for $desiredCaps"
                 logger.error(logMarker, message)
@@ -93,10 +158,16 @@ class SimulatorsNode(
 
             logger.debug(simLogMarker, "Will create simulator $ref")
 
-            val simulator = simulatorFactory.newSimulator(ref, remote, fbSimctlDevice, ports, deviceSetPath,
-                    wdaRunnerXctest, concurrentBoot, desiredCaps.headless, desiredCaps.useWda, fbSimctlDevice.toString())
-            simulator.prepareAsync()
-            devicePool[ref] = simulator
+            val simulator = simulatorFactory.newSimulator(ref, remote, fbSimctlDevice, ports, simulatorProvider.deviceSetPath,
+                    wdaRunnerXctest, concurrentBoot, desiredCaps.headless, desiredCaps.useWda)
+
+            cancelRunningSimulatorTask(ref, "createDeviceAsync")
+
+            prepareTasks[ref] = simulatorsBootExecutorService.submit {
+                simulator.prepareAsync()
+            }
+
+            createdSimulators[ref] = simulator
 
             logger.debug(simLogMarker, "Created simulator $ref")
 
@@ -140,13 +211,14 @@ class SimulatorsNode(
         with(device) {
             return DeviceDTO(
                 ref,
-                state,
+                deviceState,
                 fbsimctlEndpoint,
                 wdaEndpoint,
                 calabashPort,
+                mjpegServerPort,
                 device.userPorts.toSet(),
-                device.info,
-                device.lastError?.toDto(),
+                device.deviceInfo,
+                device.lastException?.toDto(),
                 capabilities = ActualCapabilities(
                     setLocation = true,
                     terminateApp = true,
@@ -157,15 +229,15 @@ class SimulatorsNode(
     }
 
     override fun approveAccess(deviceRef: DeviceRef, bundleId: String) {
-        getDeviceFor(deviceRef).approveAccess(bundleId)
+        getDeviceFor(deviceRef).approveAccess(bundleId, locationPermissionsLock)
     }
 
     override fun setPermissions(deviceRef: DeviceRef, appPermissions: AppPermissionsDto) {
-        getDeviceFor(deviceRef).setPermissions(appPermissions.bundleId, appPermissions.permissions)
+        getDeviceFor(deviceRef).setPermissions(appPermissions.bundleId, appPermissions.permissions, locationPermissionsLock)
     }
 
     override fun capacityRemaining(desiredCaps: DesiredCapabilities): Float {
-        return (simulatorLimit - count()) * 1F / simulatorLimit
+        return (simulatorLimit - createdSimulators.size) * 1F / simulatorLimit
     }
 
     override fun clearSafariCookies(deviceRef: DeviceRef) {
@@ -176,15 +248,15 @@ class SimulatorsNode(
         getDeviceFor(deviceRef).shake()
     }
 
-    override fun count(): Int = devicePool.size
-
     override fun dispose() {
         logger.info(logMarker, "Finalising simulator pool for ${remote.hostName}")
 
-        val disposeJobs = devicePool.map {
+        val disposeJobs = createdSimulators.map {
             launch(context = simulatorsThreadPool) {
                 try {
-                    it.value.release("Finalising pool for ${remote.hostName}")
+                    val simulator = it.value
+                    cancelRunningSimulatorTask(simulator.ref, "dispose")
+                    simulator.release("Finalising pool for ${remote.hostName}")
                 } catch (e: Throwable) {
                     logger.error(logMarker, "While releasing '${it.key}' for ${remote.hostName}: $e")
                 }
@@ -225,22 +297,39 @@ class SimulatorsNode(
     }
 
     override fun list(): List<DeviceDTO> {
-        return devicePool.map { simulatorToDTO(it.value) }
+        return createdSimulators.map { simulatorToDTO(it.value) }
     }
 
     override fun isReachable(): Boolean = remote.isReachable()
 
     override fun deleteRelease(deviceRef: DeviceRef, reason: String): Boolean {
-        val iSimulator = devicePool[deviceRef] ?: return false
+        val iSimulator = createdSimulators[deviceRef] ?: return false
+
+        cancelRunningSimulatorTask(deviceRef, "deleteRelease")
+
         iSimulator.release("deleteRelease $reason $deviceRef")
-        devicePool.remove(deviceRef)
+
+        createdSimulators.remove(deviceRef)
         val entries = allocatedPorts[deviceRef] ?: return true
         portAllocator.deallocateDAP(entries)
+
         return true
     }
 
+    private fun cancelRunningSimulatorTask(deviceRef: DeviceRef, reason: String) {
+        prepareTasks[deviceRef]?.let { oldPrepareTask ->
+            if (!oldPrepareTask.isDone) {
+                logger.error(logMarker, "Cancelling async task for Simulator $deviceRef while performing $reason")
+                oldPrepareTask.cancel(true)
+            }
+        }
+    }
+
     override fun resetAsync(deviceRef: DeviceRef) {
-        getDeviceFor(deviceRef).resetAsync()
+        getDeviceFor(deviceRef).resetAsync().let { resetProc ->
+            cancelRunningSimulatorTask(deviceRef, "resetAsync")
+            prepareTasks[deviceRef] = simulatorsBootExecutorService.submit(resetProc)
+        }
     }
 
     override fun state(deviceRef: DeviceRef): SimulatorStatusDTO {
@@ -279,12 +368,16 @@ class SimulatorsNode(
         return getDeviceFor(deviceRef).dataContainer(dataPath.bundleId).readFile(dataPath.path)
     }
 
+    override fun pushFile(ref: DeviceRef, fileName: String, data: ByteArray, bundleId: String) {
+        getDeviceFor(ref).dataContainer(bundleId).writeFile(File(fileName), data)
+    }
+
     override fun openUrl(deviceRef: DeviceRef, url: String) {
         getDeviceFor(deviceRef).openUrl(url)
     }
 
     override fun uninstallApplication(deviceRef: DeviceRef, bundleId: String) {
-        getDeviceFor(deviceRef).uninstallApplication(bundleId)
+        getDeviceFor(deviceRef).uninstallApplication(bundleId, appInstaller)
     }
 
     override fun setEnvironmentVariables(deviceRef: DeviceRef, envs: Map<String, String>) {

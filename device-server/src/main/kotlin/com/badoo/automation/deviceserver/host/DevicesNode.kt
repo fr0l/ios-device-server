@@ -1,22 +1,26 @@
 package com.badoo.automation.deviceserver.host
 
+import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.*
+import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.XcodeVersion
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.ios.device.*
 import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctl
 import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
+import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.deviceRefFromUDID
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
+import org.slf4j.Marker
 import java.io.File
 import java.net.URL
 import java.time.Duration
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.Future
-import java.util.concurrent.TimeUnit
+import java.util.*
+import java.util.concurrent.*
+import kotlin.system.measureNanoTime
 
 class DevicesNode(
     private val remote: IRemote,
@@ -28,8 +32,13 @@ class DevicesNode(
     private val uninstallApps: Boolean,
     private val wdaBundlePath: File,
     private val remoteWdaBundleRoot: File,
-    private val fbsimctlVersion: String
+    private val fbsimctlVersion: String,
+    private val appInstallerExecutorService: ExecutorService = Executors.newFixedThreadPool(4)
 ) : ISimulatorsNode {
+    override fun updateApplicationPlist(ref: DeviceRef, plistEntry: PlistEntryDTO) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
+
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
     private val logMarker = MapEntriesAppendingMarker(
         mapOf(
@@ -37,10 +46,85 @@ class DevicesNode(
         )
     )
 
-    private val isWebDriverAgentDeployed = remote.execIgnoringErrors(listOf("test", "-d", remoteWdaBundleRoot.absolutePath)).isSuccess
+    private val appBinariesCache: MutableMap<String, File> = ConcurrentHashMap(200)
 
-    override val isNodePrepared: Boolean
-        get() = remote.isLocalhost() || isWebDriverAgentDeployed
+    override fun deployApplication(appBundle: ApplicationBundle) {
+        val appDirectory = if (remote.isLocalhost()) {
+            appBundle.appDirectory!!
+        } else {
+            copyAppToRemoteHost(appBundle)
+        }
+        val key = appBundle.appUrl.toExternalForm()
+        appBinariesCache[key] = appDirectory
+    }
+
+    private fun copyAppToRemoteHost(appBundle: ApplicationBundle): File {
+        val marker = MapEntriesAppendingMarker(mapOf(LogMarkers.HOSTNAME to remote.publicHostName, "action_name" to "scp_application"))
+        logger.debug(marker, "Copying application ${appBundle.appUrl} to $this")
+
+        val remoteDirectory = File(ApplicationConfiguration().appBundleCacheRemotePath, UUID.randomUUID().toString()).absolutePath
+        remote.exec(listOf("/bin/rm", "-rf", remoteDirectory), mapOf(), false, 90).stdOut.trim()
+        remote.exec(listOf("/bin/mkdir", "-p", remoteDirectory), mapOf(), false, 90).stdOut.trim()
+
+        val nanos = measureNanoTime {
+            remote.scpToRemoteHost(appBundle.appDirectory!!.absolutePath, remoteDirectory, Duration.ofMinutes(1))
+        }
+        val seconds = TimeUnit.NANOSECONDS.toSeconds(nanos)
+        val measurement = mapOf(LogMarkers.HOSTNAME to remote.publicHostName, "action_name" to "scp_application", "duration" to seconds)
+
+        logger.debug(MapEntriesAppendingMarker(measurement), "Successfully copied application ${appBundle.appUrl} to $this. Took $seconds seconds")
+        return File(remoteDirectory, appBundle.appDirectory!!.name)
+    }
+
+    override fun installApplication(deviceRef: DeviceRef, appBundleDto: AppBundleDto) {
+        logger.info(logMarker, "Ready to install app ${appBundleDto.appUrl} on device $deviceRef")
+        val appBinaryPath = appBinariesCache[appBundleDto.appUrl]
+            ?: throw RuntimeException("Unable to find requested binary. Deploy binary first from url ${appBundleDto.appUrl}")
+
+        val device = slotByExternalRef(deviceRef).device
+        val udid = device.udid
+        val installTask = appInstallerExecutorService.submit(Callable<Boolean> {
+            return@Callable performInstall(logMarker, udid, appBinaryPath, appBundleDto.appUrl)
+        })
+
+        installTask.get()
+    }
+
+    private fun performInstall(logMarker: Marker, udid: UDID, appBinaryPath: File, appUrl: String): Boolean {
+        logger.debug(logMarker, "Installing application $appUrl on device $udid")
+
+        val nanos = measureNanoTime {
+            logger.debug(logMarker, "Will install application $appUrl on device $udid using fbsimctl install ${appBinaryPath.absolutePath}")
+            try {
+                remote.fbsimctl.installApp(udid, appBinaryPath)
+            } catch (e: RuntimeException) {
+                logger.error(logMarker, "Error happened while installing the app $appUrl on $udid", e)
+                return false
+            }
+        }
+
+        val seconds = TimeUnit.NANOSECONDS.toSeconds(nanos)
+        val measurement = mutableMapOf(
+            "action_name" to "install_application",
+            "duration" to seconds
+        )
+        measurement.putAll(logMarkerDetails(udid))
+        logger.debug(MapEntriesAppendingMarker(measurement), "Successfully installed application $appUrl on device $udid. Took $seconds seconds")
+        return true
+    }
+
+    private val commonLogMarkerDetails = mapOf(
+        LogMarkers.HOSTNAME to remote.hostName
+    )
+
+    private fun logMarkerDetails(udid: UDID): Map<String, String> {
+        return commonLogMarkerDetails + mapOf(
+            LogMarkers.DEVICE_REF to deviceRefFromUDID(
+                udid,
+                remote.publicHostName
+            ), LogMarkers.UDID to udid
+        )
+    }
 
     private val deviceRegistrationInterval = Duration.ofMinutes(1)
 
@@ -62,6 +146,10 @@ class DevicesNode(
 
     override fun resetDiagnostic(deviceRef: DeviceRef, type: DiagnosticType) {
         throw(NotImplementedError("Diagnostic is not supported by physical devices"))
+    }
+
+    override fun pushFile(ref: DeviceRef, fileName: String, data: ByteArray, bundleId: String) {
+        throw(NotImplementedError("Push files is not supported by physical devices"))
     }
 
     override val remoteAddress: String get() = remote.hostName
@@ -130,17 +218,12 @@ class DevicesNode(
             wda_status = status.wda_status,
             fbsimctl_status = status.fbsimctl_status,
             state = status.state,
-            last_error = if (status.last_error == null) null else exceptionToDto(status.last_error)
+            last_error = status.last_error
         )
     }
 
     override fun isReachable(): Boolean {
         return remote.isReachable()
-    }
-
-    override fun count(): Int {
-        // FIXME: Remove from common interface, it might be needed for simulators node only
-        throw NotImplementedError("An operation is not implemented")
     }
 
     override fun deleteRelease(deviceRef: DeviceRef, reason: String): Boolean {
@@ -154,7 +237,7 @@ class DevicesNode(
 
     override fun getDeviceDTO(deviceRef: DeviceRef): DeviceDTO {
         val device = slotByExternalRef(deviceRef).device
-        return deviceToDto(deviceRef, device)
+        return deviceToDto(device)
     }
 
     override fun totalCapacity(desiredCaps: DesiredCapabilities): Int {
@@ -178,19 +261,15 @@ class DevicesNode(
     }
 
     override fun createDeviceAsync(desiredCaps: DesiredCapabilities): DeviceDTO {
-        var slot: DeviceSlot? = null
-        var ref: DeviceRef? = null
+        lateinit var slot: DeviceSlot
 
         synchronized(this) {
             slot = slots.reserve(desiredCaps)
-            ref = deviceRefFromUDID(slot!!.udid, remote.publicHostName)
-
-            activeRefs[ref!!] = slot!!.udid
+            activeRefs[slot.device.ref] = slot.device.udid
         }
 
-        slot!!.device.renewAsync(whitelistedApps = whitelistedApps, uninstallApps = uninstallApps)
-
-        return deviceToDto(ref!!, device = slot!!.device)
+        slot.device.renewAsync(whitelistedApps = whitelistedApps, uninstallApps = uninstallApps)
+        return deviceToDto(slot.device)
     }
 
     override fun prepareNode() {
@@ -243,7 +322,7 @@ class DevicesNode(
                     disconnected.add(ref)
                     return@map null
                 } else {
-                    return@map deviceToDto(ref, slot.device)
+                    return@map deviceToDto(slot.device)
                 }
             }
 
@@ -258,7 +337,7 @@ class DevicesNode(
 
     override fun lastCrashLog(deviceRef: DeviceRef): CrashLog {
         val device = slotByExternalRef(deviceRef).device
-        return device.lastCrashLog() ?: CrashLog("", "")
+        return device.lastCrashLog()
     }
 
     override fun crashLogs(deviceRef: DeviceRef, pastMinutes: Long?): List<CrashLog> {
@@ -274,38 +353,49 @@ class DevicesNode(
         return false // crash logs are not supported on devices yet
     }
 
-    override fun videoRecordingDelete(deviceRef: DeviceRef): Unit = throw(NotImplementedError())
+    override fun videoRecordingDelete(deviceRef: DeviceRef) {
+        slotByExternalRef(deviceRef).device.videoRecorder.delete()
+    }
 
-    override fun videoRecordingGet(deviceRef: DeviceRef): ByteArray = throw(NotImplementedError())
+    override fun videoRecordingGet(deviceRef: DeviceRef): ByteArray {
+        return slotByExternalRef(deviceRef).device.videoRecorder.getRecording()
+    }
 
-    override fun videoRecordingStart(deviceRef: DeviceRef): Unit = throw(NotImplementedError())
+    override fun videoRecordingStart(deviceRef: DeviceRef) {
+        slotByExternalRef(deviceRef).device.videoRecorder.start()
+    }
 
-    override fun videoRecordingStop(deviceRef: DeviceRef): Unit = throw(NotImplementedError())
+    override fun videoRecordingStop(deviceRef: DeviceRef) {
+        slotByExternalRef(deviceRef).device.videoRecorder.stop()
+    }
 
     override fun listFiles(deviceRef: DeviceRef, dataPath: DataPath): List<String> = throw(NotImplementedError())
 
     override fun pullFile(deviceRef: DeviceRef, dataPath: DataPath): ByteArray = throw(NotImplementedError())
     // endregion
 
+    private val appInstaller: AppInstaller = AppInstaller(remote)
+
     override fun uninstallApplication(deviceRef: DeviceRef, bundleId: String) {
         val device = slotByExternalRef(deviceRef).device
-        device.uninstallApplication(bundleId)
+        device.uninstallApplication(bundleId, appInstaller)
     }
 
-    private fun deviceToDto(deviceRef: DeviceRef, device: Device): DeviceDTO {
+    private fun deviceToDto(device: Device): DeviceDTO {
         return DeviceDTO(
-            ref = deviceRef,
+            ref = device.ref,
             state = device.deviceState,
             fbsimctl_endpoint = device.fbsimctlEndpoint,
             wda_endpoint = device.wdaEndpoint,
             calabash_port = device.calabashPort,
+            mjpeg_server_port = device.mjpegServerPort,
             user_ports = emptySet(),
             info = device.deviceInfo,
             last_error = device.lastException?.toDto(),
             capabilities = ActualCapabilities(
                 setLocation = false,
                 terminateApp = false,
-                videoCapture = false
+                videoCapture = true
             )
         )
     }
@@ -356,16 +446,15 @@ class DevicesNode(
 
     private fun copyWdaBundleToHost() {
         logger.debug(logMarker, "Setting up remote node: copying WebDriverAgent to node ${remote.hostName}")
-        remote.rsync(
-            wdaBundlePath.absolutePath,
-            remoteWdaBundleRoot.absolutePath,
-            setOf("-r", "--delete")
-        )
+        remote.rm(remoteWdaBundleRoot.absolutePath, Duration.ofMinutes(1))
+        remote.execIgnoringErrors(listOf("/bin/mkdir", "-p", remoteWdaBundleRoot.absolutePath))
+        remote.scpToRemoteHost(wdaBundlePath.absolutePath, remoteWdaBundleRoot.absolutePath, Duration.ofMinutes(1))
     }
 
     private fun cleanup() {
         // single instance of server on node is implied, so we can kill all simulators and fbsimctl processes
-        remote.execIgnoringErrors(listOf("pkill", "-9", "/usr/local/bin/fbsimctl"))
+        remote.execIgnoringErrors(listOf("/usr/bin/pkill", "-9", "-f", "/usr/local/bin/fbsimctl"))
+        remote.execIgnoringErrors(listOf("/usr/bin/pkill", "-9", "-f", "/usr/local/bin/iproxy"))
     }
 
     override fun setEnvironmentVariables(deviceRef: DeviceRef, envs: Map<String, String>) {
@@ -383,6 +472,9 @@ class DevicesNode(
         return true
     }
 
+    override fun appInstallationStatus(deviceRef: DeviceRef): Map<String, Boolean> {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
     override fun hashCode(): Int {
         return publicHostName.hashCode()
     }

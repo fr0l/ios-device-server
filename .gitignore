@@ -31,3 +31,5 @@ build/
 
 # built WebDriverAgent files
 ios/facebook
+
+!.idea/

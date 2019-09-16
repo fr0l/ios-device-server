@@ -38,6 +38,28 @@ class RemoteShellCommandTest {
     }
 
     @Test
+    fun interactiveSshCommand() {
+        remoteShell = RemoteShellCommand(
+                remoteHost = remoteHost,
+                userName = userName,
+                connectionTimeout = 1
+                )
+        val result = remoteShell.exec(listOf("fbsimctl"), timeOut = Duration.ofMillis(100))
+
+        val expectedCommand = listOf(
+                "/usr/bin/ssh",
+                "-o", "ConnectTimeout=1",
+                "-o", "PreferredAuthentications=publickey",
+                "-q",
+                "-t", "-t",
+                userAtHost,
+                "fbsimctl"
+        )
+
+        assertEquals(expectedCommand, result.cmd)
+    }
+
+    @Test
     fun sshCommandWithEnvironmentVariables() {
         val processBuilder: ProcessBuilder = mockThis()
         val process: Process = mockThis()

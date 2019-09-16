@@ -2,7 +2,7 @@ package com.badoo.automation.deviceserver.ios.fbsimctl
 
 import com.badoo.automation.deviceserver.command.CommandResult
 import com.badoo.automation.deviceserver.command.IShellCommand
-import com.badoo.automation.deviceserver.command.RemoteShellCommand
+import com.badoo.automation.deviceserver.command.SshConnectionException
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.util.ensure
 import org.slf4j.LoggerFactory
@@ -14,7 +14,7 @@ class FBSimctl(
         private val parser: IFBSimctlResponseParser = FBSimctlResponseParser()
 ) : IFBSimctl {
     companion object {
-        private val SIMULATOR_SHUTDOWN_TIMEOUT: Duration = Duration.ofSeconds(60)
+        private val SIMULATOR_SHUTDOWN_TIMEOUT: Duration = Duration.ofSeconds(90)
         const val FBSIMCTL_BIN = "/usr/local/bin/fbsimctl"
         const val RESPONSE_FORMAT = "--json"
     }
@@ -69,7 +69,7 @@ class FBSimctl(
 
     override fun eraseSimulator(udid: UDID) = fbsimctl(cmd = "erase", udid = udid)
 
-    override fun create(model: String?, os: String?, transitional: Boolean): FBSimctlDevice {
+    override fun create(model: String?, os: String?): FBSimctlDevice {
         val args = mutableListOf("create")
 
         // FIXME: escaping should be part of exec implementation and hidden from caller. Fix in separate ticket.
@@ -87,7 +87,7 @@ class FBSimctl(
             val suggestions = suggestCreationArgs()
             throw(RuntimeException("Could not create simulator \"$model\" \"$os\"\n$suggestions"))
         }
-        return parser.parseDeviceCreation(result, transitional)
+        return parser.parseDeviceCreation(result)
     }
 
     private fun suggestCreationArgs(): String {
@@ -102,11 +102,11 @@ class FBSimctl(
         return parser.parseDiagnosticInfo(fbsimctl(cmd = "diagnose", udid = udid))
     }
 
-    override fun shutdown(udid: UDID) {
-        fbsimctl("shutdown", udid, timeOut = SIMULATOR_SHUTDOWN_TIMEOUT, raiseOnError = false)
+    override fun shutdown(udid: UDID): CommandResult {
+        return shellCommand.exec("/usr/bin/xcrun simctl shutdown $udid".split(" "), timeOut = SIMULATOR_SHUTDOWN_TIMEOUT, returnFailure = true)
     }
 
-    override fun shutdownAllBooted() = fbsimctl("--simulators --state=booted shutdown")
+    override fun shutdownAllBooted() = shellCommand.exec("/usr/bin/xcrun simctl shutdown all".split(" "), timeOut = Duration.ofMinutes(3), returnFailure = true).stdOut
 
     override fun delete(udid: UDID) = fbsimctl("delete", udid)
 
@@ -138,13 +138,12 @@ class FBSimctl(
         timeOut: Duration = Duration.ofSeconds(30),
         raiseOnError: Boolean = false
     ): String {
-
         val fbsimctlCommand = buildFbsimctlCommand(jsonFormat, udid, cmd)
 
-        var result = executeCommand(fbsimctlCommand, timeOut)
-
-        if (result.exitCode == 255 && shellCommand is RemoteShellCommand) { // SSH_CONNECT_ERROR, but not necessary
-            result = executeCommand(fbsimctlCommand, timeOut) //FIXME: NOT a good place and not a good thing to do
+        val result = try {
+            shellCommand.exec(fbsimctlCommand, timeOut = timeOut, returnFailure = true)
+        } catch (e: SshConnectionException) {
+            shellCommand.exec(fbsimctlCommand, timeOut = timeOut, returnFailure = true)
         }
 
         val errors = filterFailures(result.stdOut)
@@ -158,10 +157,6 @@ class FBSimctl(
         }
 
         return result.stdOut.trim() // remove last new_line
-    }
-
-    private fun executeCommand(fbsimctlCommand: ArrayList<String>, timeOut: Duration): CommandResult {
-        return shellCommand.exec(fbsimctlCommand, timeOut = timeOut)
     }
 
     private fun buildFbsimctlCommand(jsonFormat: Boolean, udid: UDID?, command: List<String>): ArrayList<String> {
@@ -180,5 +175,7 @@ class FBSimctl(
         return cmd
     }
 
-    private fun filterFailures(out: String) = parser.parse(out).filter { it["event_name"] == "failure" }
+    private fun filterFailures(fbsimctlResponse: String): List<Map<String, Any>> {
+        return parser.parseFailures(fbsimctlResponse)
+    }
 }

@@ -16,6 +16,7 @@ open class WebDriverAgent(
     protected val udid: UDID,
     private val wdaEndpoint: URI,
     port: Int = wdaEndpoint.port,
+    mjpegServerPort: Int,
     private val childFactory: (
                 remoteHost: String,
                 userName: String,
@@ -24,7 +25,7 @@ open class WebDriverAgent(
                 out_reader: ((line: String) -> Unit)?,
                 err_reader: ((line: String) -> Unit)?
         ) -> ChildProcess = ChildProcess.Companion::fromCommand
-) : LongRunningProc(udid, remote.hostName) {
+) : LongRunningProc(udid, remote.hostName), IWebDriverAgent {
     private val launchXctestCommand: List<String> = listOf(
             FBSimctl.FBSIMCTL_BIN,
             udid,
@@ -33,12 +34,18 @@ open class WebDriverAgent(
             hostApp,
             "--port",
             port.toString(),
+            "--mjpeg-server-port",
+            mjpegServerPort.toString(),
             "--",
             "listen"
     )
     private val uri: URI = uriWithPath(wdaEndpoint, "status")
 
     override fun toString(): String = "<$udid at ${remote.hostName}:${wdaEndpoint.port}>"
+
+    override fun installHostApp() {
+        remote.fbsimctl.installApp(udid, wdaRunnerXctest)
+    }
 
     override fun start() {
         ensure(childProcess == null) { WebDriverAgentError("Previous WebDriverAgent childProcess $childProcess has not been killed") }
@@ -53,7 +60,7 @@ open class WebDriverAgent(
                 launchXctestCommand,
                 mapOf(),
                 null,
-                { message -> logger.debug(logMarker, "${this@WebDriverAgent}: WDA <e>: ${message.trim()}") }
+                { message -> logger.warn(logMarker, "${this@WebDriverAgent}: WDA <e>: ${message.trim()}") }
         )
 
         Thread.sleep(5000) // 5 should be ok

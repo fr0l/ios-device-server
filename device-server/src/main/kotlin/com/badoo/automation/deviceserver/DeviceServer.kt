@@ -18,21 +18,21 @@ import io.ktor.auth.UnauthorizedResponse
 import io.ktor.auth.UserIdPrincipal
 import io.ktor.auth.authentication
 import io.ktor.auth.principal
-import io.ktor.features.CallLogging
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.DefaultHeaders
-import io.ktor.features.StatusPages
+import io.ktor.features.*
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.jackson.jackson
+import io.ktor.request.path
 import io.ktor.request.uri
 import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.*
 import io.ktor.server.engine.ApplicationEngineEnvironmentReloading
 import io.ktor.server.engine.ShutDownUrl
+import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import java.io.File
+import java.io.FileNotFoundException
 import java.lang.IllegalStateException
 import java.net.NetworkInterface
 import java.util.*
@@ -61,8 +61,8 @@ private fun paramInt(call: ApplicationCall, s: String): Int {
 }
 
 fun getAddresses(): List<String> {
-    return NetworkInterface.getNetworkInterfaces().toList().flatMap {
-        it.inetAddresses.toList()
+    return NetworkInterface.getNetworkInterfaces().toList().flatMap { networkInterface ->
+        networkInterface.inetAddresses.toList()
                 .filter { it.address.size == 4 }
                 .filter { !it.isLoopbackAddress }
                 .map { it.hostAddress + "/" + it.hostName }
@@ -106,8 +106,8 @@ fun Application.module() {
         fbsimctlVersion = appConfiguration.fbsimctlVersion
     )
     val deviceManager = DeviceManager(config, hostFactory)
+    deviceManager.cleanupTemporaryFiles()
     deviceManager.startAutoRegisteringDevices()
-    deviceManager.launchAutoReleaseLoop()
 
     zombieReaper.launchReapingZombies()
 
@@ -174,7 +174,8 @@ fun Application.module() {
             }
             post {
                 val user = call.principal<UserIdPrincipal>()
-                call.respond(devicesController.createDevice(jsonContent<DesiredCapabilities>(call), user))
+                val deviceDto: DeviceDTO = devicesController.createDevice(jsonContent<DesiredCapabilities>(call), user)
+                call.respond(deviceDto)
             }
             delete {
                 val user = call.principal<UserIdPrincipal>()
@@ -183,6 +184,10 @@ fun Application.module() {
                 } else {
                     call.respond(devicesController.releaseDevices(user))
                 }
+            }
+            post("deploy_app") {
+                val appBundle = jsonContent<AppBundleDto>(call)
+                call.respond(devicesController.deployApplication(appBundle))
             }
             post("-/capacity") {
                 call.respond(devicesController.getTotalCapacity(jsonContent<DesiredCapabilities>(call)))
@@ -226,6 +231,16 @@ fun Application.module() {
                         val dataPath = jsonContent<DataPath>(call)
                         call.respond(devicesController.pullFile(ref, dataPath))
                     }
+                    post("push_file") {
+                        val ref = param(call, "ref")
+                        val dataPath = jsonContent<FileDto>(call)
+
+                        if (dataPath.bundleId == null) {
+                            throw IllegalArgumentException("Bundle id is not set. Have to set 'bundle_id' to aprropriate value.")
+                        }
+
+                        call.respond(devicesController.pushFile(ref, dataPath.file_name, dataPath.data, dataPath.bundleId))
+                    }
                     post("list_files") {
                         val ref = param(call, "ref")
                         val dataPath = jsonContent<DataPath>(call)
@@ -237,6 +252,21 @@ fun Application.module() {
                         val ref = param(call, "ref")
                         val bundleId = param(call, "bundleId")
                         call.respond(devicesController.uninstallApplication(ref, bundleId))
+                    }
+                    post("install") {
+                        val ref = param(call, "ref")
+                        val appBundle = jsonContent<AppBundleDto>(call)
+                        call.respond(devicesController.installApplication(ref, appBundle))
+                    }
+                    get("install_status") {
+                        val ref = param(call, "ref")
+                        call.respond(devicesController.appInstallationStatus(ref))
+                    }
+
+                    post("update_plist") {
+                        val ref = param(call, "ref")
+                        val plistEntries = jsonContent<PlistEntryDTO>(call)
+                        call.respond(devicesController.updateApplicationPlist(ref, plistEntries))
                     }
                 }
                 route("media") {
@@ -318,13 +348,21 @@ fun Application.module() {
                 is IllegalArgumentException -> HttpStatusCode(422, "Unprocessable Entity")
                 is IllegalStateException -> HttpStatusCode.Conflict
                 is DeviceNotFoundException -> HttpStatusCode.NotFound
+                is FileNotFoundException -> HttpStatusCode.NotFound
                 is NoAliveNodesException -> HttpStatusCode.TooManyRequests
                 is OverCapacityException -> HttpStatusCode.TooManyRequests
                 is DeviceCreationException -> HttpStatusCode.ServiceUnavailable
                 else -> HttpStatusCode.InternalServerError
             }
 
-            logger.error(call.request.toString(), exception)
+            val path = call.request.path()
+            val marker = MapEntriesAppendingMarker(mapOf(
+                "http_api" to path,
+                "exception_class" to exception.javaClass.canonicalName
+            ))
+
+            logger.error(marker, "HTTP_API: $path | Error: ${exception.message}", exception)
+
             call.respond(statusCode,
                     hashMapOf(
                             "error" to exception.toDto()

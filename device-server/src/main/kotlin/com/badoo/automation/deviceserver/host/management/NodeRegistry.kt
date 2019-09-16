@@ -3,7 +3,9 @@ package com.badoo.automation.deviceserver.host.management
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.DesiredCapabilities
 import com.badoo.automation.deviceserver.data.DeviceDTO
+import com.badoo.automation.deviceserver.data.DeviceRef
 import com.badoo.automation.deviceserver.host.ISimulatorsNode
+import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesException
 import com.badoo.automation.deviceserver.host.management.errors.NoNodesRegisteredException
 import com.badoo.automation.deviceserver.ios.ActiveDevices
@@ -51,8 +53,8 @@ class NodeRegistry(val activeDevices: ActiveDevices = ActiveDevices()) {
 
     private fun getAlive(): Set<NodeWrapper> {
         val filteredStream: Stream<NodeWrapper> = nodeWrappers
-            .filter { it.isEnabled }
             .parallelStream()
+            .filter { it.isEnabled }
             .filter { it.isAlive() }
         return filteredStream.collect(toSet())
     }
@@ -67,6 +69,17 @@ class NodeRegistry(val activeDevices: ActiveDevices = ActiveDevices()) {
         return mapOf("total" to count)
     }
 
+    fun hasCapacity(desiredCapabilities: DesiredCapabilities): Boolean {
+        val remainingCapacity = nodeWrappers
+            .parallelStream()
+            .filter { it.isEnabled }
+            .filter { it.isAlive() }
+            .map { it.node.capacityRemaining(desiredCapabilities) }
+            .reduce(0F, java.lang.Float::sum)
+
+        return remainingCapacity > 0F
+    }
+
     fun createDeviceAsync(desiredCapabilities: DesiredCapabilities, deviceTimeout: Duration, userId: String?): DeviceDTO {
         if (getAll().isEmpty()) {
             throw NoNodesRegisteredException("No nodes are registered to create a device")
@@ -79,6 +92,7 @@ class NodeRegistry(val activeDevices: ActiveDevices = ActiveDevices()) {
                 ?: throw NoAliveNodesException("No alive nodes are available to create device at the moment")
 
         val dto = node.createDeviceAsync(desiredCapabilities)
+        logger.info("Create device dto ${dto} ")
 
         val logMarker: Marker = MapEntriesAppendingMarker(mutableMapOf(
                 LogMarkers.DEVICE_REF to dto.ref,
@@ -86,7 +100,7 @@ class NodeRegistry(val activeDevices: ActiveDevices = ActiveDevices()) {
         ))
         logger.info(logMarker, "Create device started, register with timeout ${deviceTimeout.seconds} secs")
 
-        activeDevices.registerDevice(dto.ref, node, deviceTimeout, userId)
+        activeDevices.registerDevice(dto.ref, node, userId)
 
         return dto
     }
@@ -96,5 +110,14 @@ class NodeRegistry(val activeDevices: ActiveDevices = ActiveDevices()) {
         val list: List<Job> = nodeWrappers.map { launch(simulatorsThreadPool) { it.stop() } }
         runBlocking { list.forEach { it.join() } }
         nodeWrappers.clear()
+    }
+
+    fun deleteReleaseDevice(ref: DeviceRef, reason: String) {
+        try { // using try-catch here not to expose tryGetNodeFor
+            activeDevices.releaseDevice(ref, reason)
+        } catch (e: DeviceNotFoundException) {
+            logger.warn("Skipping $ref release because no node knows about it")
+            return
+        }
     }
 }
