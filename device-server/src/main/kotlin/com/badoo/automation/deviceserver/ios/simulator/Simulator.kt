@@ -2,17 +2,17 @@ package com.badoo.automation.deviceserver.ios.simulator
 
 import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers
-import com.badoo.automation.deviceserver.WaitTimeoutError
 import com.badoo.automation.deviceserver.command.ShellUtils
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.IRemote
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlDeviceState
+import com.badoo.automation.deviceserver.host.management.errors.DeviceCreationException
 import com.badoo.automation.deviceserver.ios.proc.FbsimctlProc
 import com.badoo.automation.deviceserver.ios.proc.IWebDriverAgent
 import com.badoo.automation.deviceserver.ios.proc.SimulatorWebDriverAgent
 import com.badoo.automation.deviceserver.ios.proc.SimulatorXcrunWebDriverAgent
 import com.badoo.automation.deviceserver.ios.simulator.backup.ISimulatorBackup
 import com.badoo.automation.deviceserver.ios.simulator.backup.SimulatorBackup
+import com.badoo.automation.deviceserver.ios.simulator.backup.SimulatorBackupError
 import com.badoo.automation.deviceserver.ios.simulator.data.DataContainer
 import com.badoo.automation.deviceserver.ios.simulator.data.FileSystem
 import com.badoo.automation.deviceserver.ios.simulator.data.Media
@@ -21,51 +21,57 @@ import com.badoo.automation.deviceserver.ios.simulator.diagnostic.SystemLog
 import com.badoo.automation.deviceserver.ios.simulator.video.MJPEGVideoRecorder
 import com.badoo.automation.deviceserver.ios.simulator.video.SimulatorVideoRecorder
 import com.badoo.automation.deviceserver.ios.simulator.video.VideoRecorder
+import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.executeWithTimeout
 import com.badoo.automation.deviceserver.util.pollFor
-import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.Runnable
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
+import java.io.*
 import java.net.URI
 import java.net.URL
+import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.time.Duration
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeUnit.NANOSECONDS
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.withLock
-import kotlin.system.measureTimeMillis
+import kotlin.system.measureNanoTime
 
-class Simulator (
+class Simulator(
         private val deviceRef: DeviceRef,
         private val remote: IRemote,
-        private val deviceInfo: DeviceInfo,
+        override val deviceInfo: DeviceInfo,
         private val allocatedPorts: DeviceAllocatedPorts,
         private val deviceSetPath: String,
         private val wdaRunnerXctest: File,
-        private val concurrentBootsPool: ThreadPoolDispatcher,
+        private val concurrentBootsPool: ExecutorService,
         headless: Boolean,
         private val useWda: Boolean,
-        override val fbsimctlSubject: String,
         private val configuration: ApplicationConfiguration = ApplicationConfiguration(),
         private val trustStoreFile: String = configuration.trustStorePath,
         private val assetsPath: String = configuration.assetsPath
 ) : ISimulator
 {
     private companion object {
-        private val PREPARE_TIMEOUT: Duration = Duration.ofMinutes(4)
-        private val RESET_TIMEOUT: Duration = Duration.ofMinutes(3)
+        private val PREPARE_TIMEOUT: Duration = Duration.ofMinutes(10)
+        private val RESET_TIMEOUT: Duration = Duration.ofMinutes(5)
         private const val SAFARI_BUNDLE_ID = "com.apple.mobilesafari"
     }
 
     override val ref = deviceRef
-    override val udid = deviceInfo.udid
+    override val udid: UDID = deviceInfo.udid
     override val fbsimctlEndpoint = URI("http://${remote.publicHostName}:${allocatedPorts.fbsimctlPort}/$udid/")
-    override val wdaEndpoint= URI("http://${remote.publicHostName}:${allocatedPorts.wdaPort}/")
+    override val wdaEndpoint = URI("http://${remote.publicHostName}:${allocatedPorts.wdaPort}/")
     override val userPorts = allocatedPorts
-    override val info = deviceInfo
     override val calabashPort: Int = allocatedPorts.calabashPort
     override val mjpegServerPort: Int = allocatedPorts.mjpegServerPort
     override val videoRecorder: VideoRecorder = createVideoRecorder()
@@ -74,13 +80,18 @@ class Simulator (
 
     //region instance state variables
     private val deviceLock = ReentrantLock()
-    @Volatile private var deviceState: DeviceState = DeviceState.NONE // writing from separate thread
-    @Volatile private var lastException: Exception? = null // writing from separate thread
+    @Volatile override var deviceState: DeviceState = DeviceState.NONE // writing from separate thread
+        private set
 
-    private lateinit var criticalAsyncPromise: Job // 1-1 from ruby
+    @Volatile override var lastException: Exception? = null // writing from separate thread
+        private set
+
     private val fbsimctlProc: FbsimctlProc = FbsimctlProc(remote, deviceInfo.udid, fbsimctlEndpoint, headless)
     private val webDriverAgent: IWebDriverAgent = createWebDriverAgent()
-    private val backup: ISimulatorBackup = SimulatorBackup(remote, udid, deviceSetPath)
+    private val simulatorProcess = SimulatorProcess(remote, udid, deviceRef)
+    private val simulatorDirectory = File(deviceSetPath, udid)
+    private val simulatorDataDirectory = File(simulatorDirectory, "data")
+    private val backup: ISimulatorBackup = SimulatorBackup(remote, udid, deviceSetPath, simulatorDirectory, simulatorDataDirectory)
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
     private val commonLogMarkerDetails = mapOf(
             LogMarkers.DEVICE_REF to deviceRef,
@@ -89,47 +100,81 @@ class Simulator (
     )
     private val logMarker: Marker = MapEntriesAppendingMarker(commonLogMarkerDetails)
     private val fileSystem = FileSystem(remote, udid)
-    private val simulatorProcess = SimulatorProcess(remote, udid, deviceRef)
     @Volatile private var healthChecker: Job? = null
     //endregion
 
     override val media: Media = Media(remote, udid, deviceSetPath)
 
-    //region properties from ruby with backing mutable field
-    override val state get() = deviceState
-    override val lastError get() = lastException
-    //endregion
-
     override fun toString() = "<Simulator: $deviceRef>"
+
+    @Volatile
+    private var bootTask: Future<*>? = null
+    @Volatile
+    private var installTask: Future<Boolean>? = null
+
+    override fun installApplication(
+        appInstaller: AppInstaller,
+        appBundleId: String,
+        appBinaryPath: File
+    ) {
+        deviceLock.withLock {
+            installTask?.let { oldInstallTask ->
+                if (!oldInstallTask.isDone) {
+                    val message = "Failed to install app $appBundleId to simulator $udid due to previous task is not finished"
+                    logger.error(logMarker, message)
+                    throw RuntimeException(message)
+                }
+            }
+
+            installTask = appInstaller.installApplication(udid, appBundleId, appBinaryPath)
+        }
+    }
+
+    override fun appInstallationStatus(): Map<String, Boolean> {
+        val task = installTask
+        val status = mapOf<String, Boolean>(
+            "task_exists" to (task != null),
+            "task_complete" to (task != null && task.isDone),
+            "success" to (task != null && task.isDone && task.get())
+        )
+        return status
+    }
 
     //region prepareAsync
     override fun prepareAsync() {
-        stopPeriodicHealthCheck()
         executeCritical {
+            if (deviceState == DeviceState.CREATING || deviceState == DeviceState.RESETTING) {
+                throw java.lang.IllegalStateException("Simulator $udid is already in state $deviceState")
+            }
             deviceState = DeviceState.CREATING
-        }
 
-        executeCriticalAsync {
-            val elapsed = measureTimeMillis {
+            val nanos = measureNanoTime {
                 try {
+                    shutdown()
                     prepare(clean = true)
                 } catch (e: Exception) { // catching most wide exception
-                    executeCritical {
-                        deviceState = DeviceState.FAILED
-                    }
+                    deviceState = DeviceState.FAILED
                     logger.error(logMarker, "Failed to prepare device ${this@Simulator}", e)
+                    shutdown()
+                    disposeResources()
                     throw e
                 }
             }
-            logger.info(logMarker, "Device ${this@Simulator} ready in ${elapsed / 1000} seconds")
+
+            val seconds = NANOSECONDS.toSeconds(nanos)
+            val measurement = mutableMapOf(
+                "action_name" to "prepareAsync",
+                "duration" to seconds
+            )
+            measurement.putAll(commonLogMarkerDetails)
+
+            logger.info(MapEntriesAppendingMarker(measurement), "Device ${this@Simulator} ready in $seconds seconds")
         }
     }
 
     private fun prepare(timeout: Duration = PREPARE_TIMEOUT, clean: Boolean) {
         logger.info(logMarker, "Starting to prepare ${this@Simulator}. Will wait for ${timeout.seconds} seconds")
         lastException = null
-        webDriverAgent.stop()
-        shutdown()
 
         //FIXME: add checks for cancellation of criticalAsyncPromise
         executeWithTimeout(timeout, "Preparing simulator") {
@@ -138,7 +183,14 @@ class Simulator (
 
             if (backup.isExist()) {
                 if (clean) {
-                    backup.restore()
+                    try {
+                        backup.restore()
+                    } catch (e: SimulatorBackupError) {
+                        logger.warn(logMarker, "Will erase simulator and re-create backup for ${this@Simulator}")
+                        shutdown()
+                        backup.delete()
+                        eraseSimulatorAndCreateBackup()
+                    }
                 }
             } else {
                 eraseSimulatorAndCreateBackup()
@@ -146,13 +198,15 @@ class Simulator (
 
             logTiming("simulator boot") { boot() }
 
+            fbsimctlProc.start()
+
             if (useWda) {
                 logTiming("starting WebDriverAgent") { startWdaWithRetry() }
             }
 
             logger.info(logMarker, "Finished preparing $this")
-            deviceState = DeviceState.CREATED
             startPeriodicHealthCheck()
+            deviceState = DeviceState.CREATED
         }
     }
 
@@ -162,47 +216,102 @@ class Simulator (
         var fbsimctlFailCount = 0
         var wdaFailCount = 0
         val maxFailCount = 3
-        val healthCheckInterval = Duration.ofSeconds(10).toMillis()
+        val healthCheckInterval = Duration.ofSeconds(15).toMillis()
 
         healthChecker = launch {
             while (isActive) {
-                if (fbsimctlProc.isHealthy()) {
-                    fbsimctlFailCount = 0
-                } else {
-                    fbsimctlFailCount += 1
-
-                    if (fbsimctlFailCount >= maxFailCount) {
-                        deviceState = DeviceState.FAILED
-                        val message = "Fbsimctl health check failed $fbsimctlFailCount times. Setting device state to $deviceState"
-                        logger.error(logMarker, message)
-                        throw RuntimeException("${this@Simulator} $message. Stopping health check")
-                    }
-                }
-
-                if (webDriverAgent.isHealthy()) {
-                    wdaFailCount = 0
-                } else {
-                    wdaFailCount += 1
-
-                    if (wdaFailCount >= maxFailCount) {
-                        deviceState = DeviceState.FAILED
-                        val message = "WebDriverAgent health check failed $wdaFailCount times. Setting device state to $deviceState"
-                        logger.error(logMarker, message)
-                        throw RuntimeException("${this@Simulator} $message. Stopping health check")
-                    }
-                }
-
+                performFBSimctlHealthCheck(fbsimctlFailCount, maxFailCount)
+                performWebDriverAgentHealthCheck(wdaFailCount, maxFailCount)
                 delay(healthCheckInterval)
             }
         }
     }
 
-    private fun stopPeriodicHealthCheck() {
-        healthChecker?.cancel()
+    private suspend fun performWebDriverAgentHealthCheck(wdaFailCount: Int, maxFailCount: Int) {
+        var wdaFailCount1 = wdaFailCount
+        if (webDriverAgent.isHealthy()) {
+            wdaFailCount1 = 0
+        } else {
+            (1..5).forEach {
+                if (webDriverAgent.isHealthy()) {
+                    wdaFailCount1 = 0
+                    return@forEach
+                } else {
+                    val message = "WebDriverAgent health check failed $wdaFailCount1 times."
+                    logger.error(logMarker, message)
+                    wdaFailCount1 += 1
+                    delay(Duration.ofSeconds(2).toMillis())
+                }
+            }
+
+            if (wdaFailCount1 >= maxFailCount) {
+                logger.error(logMarker, "WebDriverAgent health check failed $wdaFailCount1 times. Restarting WebDriverAgent")
+
+                try {
+                    webDriverAgent.stop()
+                } catch (e: RuntimeException) {
+                    logger.error(logMarker, "Failed to kill WebDriverAgent. ${e.message}", e)
+                }
+
+                try {
+                    webDriverAgent.start()
+                } catch (e: RuntimeException) {
+                    logger.error(logMarker, "Failed to restart WebDriverAgent. ${e.message}", e)
+                    deviceState = DeviceState.FAILED
+                    throw RuntimeException("${this@Simulator} Failed to restart WebDriverAgent. Stopping health check")
+                }
+            }
+        }
     }
 
-    private fun startWdaWithRetry(pollTimeout: Duration = Duration.ofSeconds(30), retryInterval: Duration = Duration.ofSeconds(3)) {
-        val maxRetries = 3
+    private suspend fun performFBSimctlHealthCheck(fbsimctlFailCount: Int, maxFailCount: Int) {
+        var fbsimctlFailCount1 = fbsimctlFailCount
+        if (fbsimctlProc.isHealthy()) {
+            fbsimctlFailCount1 = 0
+        } else {
+            (1..5).forEach {
+                if (fbsimctlProc.isHealthy()) {
+                    fbsimctlFailCount1 = 0
+                    return@forEach
+                } else {
+                    val message = "Fbsimctl health check failed $fbsimctlFailCount1 times."
+                    logger.error(logMarker, message)
+                    fbsimctlFailCount1 += 1
+                    delay(Duration.ofSeconds(2).toMillis())
+                }
+            }
+
+            if (fbsimctlFailCount1 >= maxFailCount) {
+                logger.error(logMarker, "Fbsimctl health check failed $fbsimctlFailCount1 times. Restarting fbsimctl")
+
+                try {
+                    fbsimctlProc.kill()
+                } catch (e: RuntimeException) {
+                    logger.error(logMarker, "Failed to kill Fbsimctl. ${e.message}", e)
+                }
+
+                try {
+                    fbsimctlProc.start()
+                } catch (e: RuntimeException) {
+                    logger.error(logMarker, "Failed to restart Fbsimctl. ${e.message}", e)
+                    deviceState = DeviceState.FAILED
+                    throw RuntimeException("${this@Simulator} Failed to restart WebDriverAgent. Stopping health check")
+                }
+            }
+        }
+    }
+
+    private fun stopPeriodicHealthCheck() {
+        healthChecker?.let { checker ->
+            checker.cancel()
+            while (checker.isActive) {
+                Thread.sleep(100)
+            }
+        }
+    }
+
+    private fun startWdaWithRetry(pollTimeout: Duration = Duration.ofSeconds(10), retryInterval: Duration = Duration.ofSeconds(1)) {
+        val maxRetries = 7
 
         for (attempt in 1..maxRetries) {
             try {
@@ -247,6 +356,12 @@ class Simulator (
         logger.info(logMarker, "Booting ${this@Simulator} before creating a backup")
         logTiming("initial boot") { boot() }
 
+        val osVersion = Regex("[0-9.]+").find(deviceInfo.os)?.value?.toFloat()
+        if (osVersion != null && osVersion >= 13) {
+            logger.info(logMarker, "Saving Preference that Continuous Path Introduction was shown")
+            writeSimulatorDefaults("com.apple.Preferences DidShowContinuousPathIntroduction -bool true")
+        }
+
         if (assetsPath.isNotEmpty()) {
             copyMediaAssets()
         }
@@ -285,124 +400,245 @@ class Simulator (
         logger.info(logMarker, "Copied assets to ${this@Simulator}")
     }
 
+    private fun listDevices(): String {
+        return remote.shell("/usr/bin/xcrun simctl list devices", returnOnFailure = true).stdOut
+    }
+
+    private fun isSimulatorShutdown(): Boolean {
+        return listDevices().lines().find { it.contains(udid) && it.contains("(Shutdown)") } != null
+    }
+
     private fun shutdown() {
         logger.info(logMarker, "Shutting down ${this@Simulator}")
+        stopPeriodicHealthCheck()
+        bootTask?.cancel(true)
+        installTask?.cancel(true)
+        ignoringErrors({ videoRecorder.stop() })
+        ignoringErrors({ webDriverAgent.stop() })
+        ignoringErrors({ fbsimctlProc.kill() })
+
         val result = remote.fbsimctl.shutdown(udid)
 
         if (!result.isSuccess && !result.stdErr.contains("current state: Shutdown") && !result.stdOut.contains("current state: Shutdown")) {
             logger.debug(logMarker, "Error occurred while shutting down simulator $udid. Command exit code: ${result.exitCode}. Result stdErr: ${result.stdErr}")
         }
 
-        ignoringErrors { fbsimctlProc.kill() }
-
         pollFor(
-            timeOut = Duration.ofSeconds(60),
+            timeOut = Duration.ofSeconds(90),
+            retryInterval = Duration.ofSeconds(5),
             reasonName = "${this@Simulator} to shutdown",
-            retryInterval = Duration.ofSeconds(10),
             logger = logger,
             marker = logMarker
         ) {
-            val fbSimctlDevice = remote.fbsimctl.listDevice(udid)
-            FBSimctlDeviceState.SHUTDOWN.value == fbSimctlDevice?.state
+            isSimulatorShutdown()
         }
 
         logger.info(logMarker, "Successfully shut down ${this@Simulator}")
     }
 
-    private fun boot() {
-        logger.info(logMarker, "Booting ${this@Simulator} asynchronously")
-        val bootJob = async(context = concurrentBootsPool) {
-            truncateSystemLogIfExists()
-
-            logger.info(logMarker, "Starting fbsimctl on ${this@Simulator}")
-            fbsimctlProc.start() // boots simulator
-
-            var lastState: String? = null
-
-            try {
-                pollFor(
-                    Duration.ofSeconds(60),
-                    reasonName = "${this@Simulator} initial boot",
-                    shouldReturnOnTimeout = false,
-                    logger = logger,
-                    marker = logMarker
-                ) {
-                    val simulatorInfo = remote.fbsimctl.listDevice(udid)
-                    lastState = simulatorInfo?.state
-                    lastState == FBSimctlDeviceState.BOOTED.value
-                }
-            } catch (e: WaitTimeoutError) {
-                throw WaitTimeoutError("${e.message}. Simulator is in wrong state of $lastState", e)
-            }
-
-            var systemLogPath = ""
-
-            pollFor(Duration.ofSeconds(20), "${this@Simulator} system log appeared",
-                    shouldReturnOnTimeout = true, logger = logger, marker = logMarker) {
-                val diagnosticInfo = remote.fbsimctl.diagnose(udid)
-                val location = diagnosticInfo.sysLogLocation
-                if (location != null) {
-                    systemLogPath = location
-                    logger.info(logMarker, "Device ${this@Simulator} system log appeared")
-                    true
-                } else {
-                    logger.warn(logMarker, "Device ${this@Simulator} system log NOT appeared")
-                    false
-                }
-            }
-
-            pollFor(Duration.ofSeconds(30), "${this@Simulator} to be sufficiently booted",
-                    shouldReturnOnTimeout = true, logger = logger, marker = logMarker) {
-                if (!systemLogPath.isBlank()) {
-                    remote.execIgnoringErrors(listOf("grep", "-m1", "SpringBoard", systemLogPath)).isSuccess
-                } else {
-                    false
-                }
-            }
-
-            pollFor(
-                Duration.ofSeconds(60),
-                reasonName = "${this@Simulator} FbSimCtl health check",
-                retryInterval = Duration.ofSeconds(3),
-                logger = logger,
-                marker = logMarker
-            ) {
-                fbsimctlProc.isHealthy()
-            }
-
-            logger.info(logMarker, "Device ${this@Simulator} is sufficiently booted")
+    private fun disabledServices(): List<String> {
+        val cmdLine = listOf(
+            "com.apple.bird",
+            "com.apple.homed",
+            "com.apple.SafariBookmarksSyncAgent",
+//            "com.apple.itunesstored",
+            "com.apple.assistant_service",
+            "com.apple.cloudd",
+            "com.apple.carkitd",
+            "com.apple.ap.adprivacyd",
+            "com.apple.siri.ClientFlow.ClientScripter",
+            "com.apple.healthd",
+            "com.apple.mobileassetd",
+             "com.apple.accessibility.AccessibilityUIServer",
+            "com.apple.siri.context.service",
+            "com.apple.remindd",
+            "com.apple.searchd",
+            "com.apple.voiced",
+            "com.apple.telephonyutilities.callservicesd",
+            "com.apple.WebBookmarks.webbookmarksd",
+            "com.apple.siriactionsd",
+            "com.apple.healthappd",
+            "com.apple.familynotification",
+            "com.apple.navd",
+            "com.apple.assistantd",
+            "com.apple.companionappd",
+            "com.apple.email.maild",
+            "com.apple.Maps.mapspushd",
+            "com.apple.addressbooksyncd",
+            "com.apple.dataaccess.dataaccessd",
+            "spotlight",
+            "Spotlight",
+            "Spotlight.app",
+            "UIKitApplication:com.apple.Spotlight",
+            "com.apple.Spotlight",
+            "com.apple.corespotlightservice",
+            "com.apple.NPKCompanionAgent",
+            "com.apple.avatarsd",
+            "com.apple.coreservices.useractivityd",
+            "com.apple.pairedsyncd",
+            "com.apple.mobiletimerd",
+            "com.apple.mobilecal",
+            "com.apple.photoanalysisd",
+            "com.apple.suggestd",
+            "com.apple.purplebuddy.budd",
+//            "com.apple.passd",
+            "com.apple.corespeechd",
+//            "com.apple.appstored",
+            "com.apple.calaccessd"
+        ).map {
+            "--disabledJob=$it"
         }
 
-        runBlocking {
-            bootJob.await()
+        return cmdLine
+    }
+
+    private fun bootSimulator() {
+        val cmd = listOf("/usr/bin/xcrun", "simctl", "boot", udid) + disabledServices()
+        remote.exec(cmd, mapOf(), false, 60L)
+    }
+
+    private fun boot() {
+        logger.info(logMarker, "Booting ${this@Simulator} asynchronously")
+        val nanos = measureNanoTime {
+            val task = concurrentBootsPool.submit { // using limited amount of workers to boot simulator
+                bootSimulator()
+                waitUntilSimulatorBooted()
+            }
+            bootTask = task
+            task.get()
+        }
+        val timingMarker = MapEntriesAppendingMarker(commonLogMarkerDetails + mapOf("simulatoBootTime" to NANOSECONDS.toSeconds(nanos)))
+        logger.info(timingMarker, "Device ${this@Simulator} is sufficiently booted")
+    }
+
+    sealed class RequiredService(val identifier: String, @Volatile var booted: Boolean = false) {
+        class SpringBoard() : RequiredService("com.apple.SpringBoard")
+        class TextInput() : RequiredService("com.apple.TextInput.kbd")
+        class AccessibilityUIServer() : RequiredService("com.apple.accessibility.AccessibilityUIServer")
+        class Spotlight() : RequiredService("com.apple.Spotlight")
+        class SpotlightIos12() : RequiredService("SpotlightIndex")
+        class Locationd() : RequiredService("com.apple.locationd")
+
+        override fun toString(): String {
+            return identifier
         }
     }
 
-    private fun truncateSystemLogIfExists() {
-        val sysLog = remote.fbsimctl.diagnose(udid).sysLogLocation ?: return
+    val failedExitCodes = listOf(
+        // 143 - terminated
+        164, // Invalid device (not existing)
+        165 // Invalid device state (not Booted)
+    )
 
-        if (remote.isLocalhost()) {
-            try {
-                FileOutputStream(sysLog).channel.use {
-                    it.truncate(0)
-                }
-            } catch(e: IOException) {
-                logger.error(logMarker, "Error truncating sysLog $this", e)
-            }
+    private fun waitUntilSimulatorBooted() {
+        val predicate = if (remote.isLocalhost()) {
+            "eventMessage contains 'Bootstrap success' OR (eventMessage contains 'LaunchServices' AND eventMessage contains 'registering extension')"
         } else {
-            try {
-                remote.shell("echo -n > $sysLog", returnOnFailure = true)
-                logger.debug(logMarker, "Truncated syslog of simulator ${this@Simulator}")
-            } catch (e: RuntimeException) {
-                logger.error(logMarker, "Error while truncating syslog of simulator ${this@Simulator}", e)
+            "\"eventMessage contains 'Bootstrap success' OR (eventMessage contains 'LaunchServices' AND eventMessage contains 'registering extension')\""
+        }
+
+        val simulatorBootTimeOutMinutes = 2
+        val cmd = mutableListOf(
+            "/usr/bin/xcrun", "simctl", "spawn", udid, "log", "stream",
+            "--timeout", "${simulatorBootTimeOutMinutes}m",
+            "--color", "none",
+            "--level", "info")
+
+        if (deviceInfo.os.contains("iOS 13")) {
+            cmd.add("--process")
+            cmd.add("SpringBoard")
+        }
+
+        cmd.add("--predicate")
+        cmd.add(predicate)
+
+        val requiredServices = mutableListOf<RequiredService>()
+
+        if (deviceInfo.os.contains("iOS 12")) {
+            requiredServices.add(RequiredService.SpotlightIos12())
+        } else {
+            requiredServices.add(RequiredService.Spotlight())
+        }
+
+        val process = remote.remoteExecutor.startProcess(cmd, mapOf(), logMarker)
+
+        val stdOut = StringBuilder()
+        val stdErr = StringBuilder()
+
+        val outReader: ((line: String) -> Unit) = { line: String ->
+            stdOut.append(line)
+            stdOut.append("\n")
+
+            requiredServices.forEach { service ->
+                if (line.contains(service.identifier)) {
+                    service.booted = true
+                }
+            }
+
+            if (requiredServices.all { it.booted }) {
+                process.destroy()
             }
         }
+
+        val errReader: ((line: String) -> Unit) = { line: String ->
+            stdErr.append(line)
+            stdErr.append("\n")
+        }
+
+        val executor = Executors.newFixedThreadPool(2)
+        executor.submit(lineReader(process.inputStream, outReader))
+        executor.submit(lineReader(process.errorStream, errReader))
+        executor.shutdown()
+
+        val finishedInTime = process.waitFor(simulatorBootTimeOutMinutes*60L + 15L, TimeUnit.SECONDS)
+        val exitCode = if (finishedInTime) process.exitValue() else -1
+
+        if (failedExitCodes.any { exitCode == it }) {
+            val errorMessage = "Simulator $udid failed to boot. Exit code: ${process.exitValue()}. StdErr: $stdErr. StdOut: $stdOut"
+            logger.error(logMarker, errorMessage)
+            throw DeviceCreationException(errorMessage)
+        }
+
+        if (requiredServices.any { !it.booted }) {
+            val failedServices = requiredServices.filter { !it.booted }
+            val failedServicesMessage = if (failedServices.isNotEmpty()) "Failed services [${failedServices.joinToString(", ")}]" else ""
+            val errorMessage = "Simulator $udid failed to successfully boot to sufficient state. $failedServicesMessage. Exit code: $exitCode. StdErr: $stdErr. StdOut: $stdOut"
+            logger.error(logMarker, errorMessage)
+            throw DeviceCreationException(errorMessage)
+        }
+
+        if (!finishedInTime) {
+            logger.error(logMarker, "Simulator $udid log has not exited in time. Possible errors. Exit code: $exitCode. StdErr: $stdErr. StdOut: $stdOut")
+        }
+    }
+
+    private fun lineReader(inputStream: InputStream, readerProc: ((line: String) -> Unit)): java.lang.Runnable {
+        return Runnable {
+            inputStream.use { stream ->
+                val inputStreamReader = InputStreamReader(stream, StandardCharsets.UTF_8)
+                val reader = BufferedReader(inputStreamReader, 65356)
+                var line: String? = reader.readLine()
+
+                while (line != null) {
+                    readerProc.invoke(line)
+                    line = reader.readLine()
+                }
+            }
+        }
+    }
+
+    private fun writeSimulatorDefaults(setting: String) {
+        remote.shell("/usr/bin/xcrun simctl spawn $udid defaults write $setting", true)
+    }
+
+    private fun readSimulatorDefaults(): String {
+        return remote.execIgnoringErrors("/usr/bin/xcrun simctl spawn $udid defaults read".split(" ")).stdOut
     }
 
     private fun logTiming(actionName: String, action: () -> Unit) {
         logger.info(logMarker, "Device ${this@Simulator} starting action <$actionName>")
-        val millis = measureTimeMillis(action)
-        val seconds = millis / 1000
+        val nanos = measureNanoTime(action)
+        val seconds = NANOSECONDS.toSeconds(nanos)
         val measurement = mutableMapOf(
                 "action_name" to actionName,
                 "duration" to seconds
@@ -413,27 +649,42 @@ class Simulator (
     //endregion
 
     //region reset async
-    override fun resetAsync() {
-        stopPeriodicHealthCheck()
-        executeCritical {
-            deviceState = DeviceState.RESETTING
+    override fun resetAsync(): Runnable {
+        val state = deviceState
+        if (state != DeviceState.CREATED && state != DeviceState.FAILED) {
+            val message = "Unable to perform reset. Simulator $udid is in state $state"
+            logger.error(logMarker, message)
+            throw IllegalStateException(message)
         }
 
-        executeCriticalAsync {
-            // FIXME: check for it.isActive to help to cancel long running tasks
-            val elapsed = measureTimeMillis {
-                resetFromBackup()
-                try {
-                    prepare(clean = false) // simulator is already clean as it was restored from backup in resetFromBackup
-                } catch (e: Exception) { // catching most wide exception
-                    executeCritical {
+        return Runnable {
+            executeCritical {
+                deviceState = DeviceState.RESETTING
+
+                val nanos = measureNanoTime {
+                    shutdown()
+                    resetFromBackup()
+                    try {
+                        prepare(clean = false) // simulator is already clean as it was restored from backup in resetFromBackup
+                    } catch (e: Exception) { // catching most wide exception
                         deviceState = DeviceState.FAILED
+                        logger.error(logMarker, "Failed to reset and prepare device ${this@Simulator}", e)
+                        shutdown()
+                        disposeResources()
+                        throw e
                     }
-                    logger.error(logMarker, "Failed to reset and prepare device ${this@Simulator}", e)
-                    throw e
                 }
+
+                val seconds = NANOSECONDS.toSeconds(nanos)
+
+                val measurement = mutableMapOf(
+                    "action_name" to "resetAsync",
+                    "duration" to seconds
+                )
+                measurement.putAll(commonLogMarkerDetails)
+
+                logger.info(MapEntriesAppendingMarker(measurement), "Device ${this@Simulator} reset and ready in $seconds seconds")
             }
-            logger.info(logMarker, "Device ${this@Simulator} reset and ready in ${elapsed / 1000} seconds")
         }
     }
 
@@ -441,9 +692,6 @@ class Simulator (
         logger.info(logMarker, "Starting to reset $this")
 
         executeWithTimeout(timeout, "Resetting simulator") {
-            disposeResources()
-            shutdown()
-
             if (!backup.isExist()) {
                 logger.error(logMarker, "Could not find backup for $this")
                 throw SimulatorError("Could not find backup for $this")
@@ -459,19 +707,7 @@ class Simulator (
     //endregion
 
     //region helper functions — execute critical and async
-    private fun executeCriticalAsync(function: (context: CoroutineScope) -> Unit) {
-        criticalAsyncPromise = launch(context = simulatorsThreadPool) {
-            executeCritical {
-                function(this)
-            }
-        }
-    }
-
     private fun executeCritical(action: () -> Unit) {
-        if (deviceLock.isLocked) {
-            logger.info(logMarker, "Awaiting for previous action. Likely a criticalAsyncPromise $criticalAsyncPromise on ${this@Simulator}")
-        }
-
         deviceLock.withLock {
             try {
                 action()
@@ -480,23 +716,8 @@ class Simulator (
                 lastException = e
                 // FIXME: force shutdown failed sim
                 logger.error(logMarker, "Execute critical block finished with exception. Message: [${e.message}]", e)
-                logger.warn(logMarker, "Host stats on ${this@Simulator} are:\n${getSystemStats()}")
             }
         }
-    }
-
-    private fun getSystemStats(): String {
-        val uptime = remote.execIgnoringErrors(listOf("/usr/bin/uptime"))
-        val message = mutableListOf("uptime", uptime.stdOut)
-
-        val istats = remote.execIgnoringErrors(listOf("istats", "--no-graphs"), env = mapOf("RUBYOPT" to ""))
-
-        if (istats.isSuccess) {
-            message.add("istats")
-            message.add(istats.stdOut)
-        }
-
-        return message.joinToString("\n")
     }
     //endregion
 
@@ -518,15 +739,6 @@ class Simulator (
                 fbsimctl_status = isFbsimctlReady,
                 state = deviceState.value,
                 last_error = lastException?.toDTO()
-        )
-    }
-
-    private fun Exception.toDTO(): ExceptionDTO {
-
-        return ExceptionDTO(
-            type = this.javaClass.name,
-            message = this.message ?: "",
-            stackTrace = stackTrace.map { it.toString() }
         )
     }
     //endregion
@@ -565,29 +777,32 @@ class Simulator (
 
     //region release
     override fun release(reason: String) {
-        stopPeriodicHealthCheck()
         logger.info(logMarker, "Releasing device $this because $reason")
-
-        // FIXME: add background thread to clear up junk we failed to delete
-        if (deviceLock.isLocked) {
-            logger.warn(logMarker, "Going to kill previous promise $criticalAsyncPromise running on $this")
-        }
-
-        if (criticalAsyncPromise.isActive) {
-            // FIXME: unlike in Ruby canceling is not immediate, consider using thread instead of async
-            criticalAsyncPromise.cancel(CancellationException("Killing previous $criticalAsyncPromise running on $this due to release of the device"))
-        }
-
-        executeCritical {
-            disposeResources()
-            shutdown()
-        }
+        shutdown()
+        disposeResources()
         logger.info(logMarker, "Released device $this")
+    }
+
+    private fun deleteSimulatorKeepingMetadata() {
+        val simulatorDataDirectoryPath = simulatorDataDirectory.absolutePath
+        val deleteResult = remote.execIgnoringErrors(listOf("/bin/rm", "-rf", simulatorDataDirectoryPath), timeOutSeconds = 120L)
+
+        if (!deleteResult.isSuccess) {
+            logger.error(logMarker, "Failed to delete at path: [$simulatorDataDirectoryPath]. Result: $deleteResult")
+
+            val r = remote.execIgnoringErrors(listOf("/usr/bin/sudo", "/bin/rm", "-rf", simulatorDataDirectoryPath), timeOutSeconds = 120L);
+
+            if (!r.isSuccess) {
+                val undeletedFiles = remote.execIgnoringErrors(listOf("/usr/bin/find", simulatorDataDirectoryPath), timeOutSeconds = 90L);
+                logger.error(logMarker, "Failed to delete at path: [$simulatorDataDirectoryPath]. Not deleted files: ${undeletedFiles.stdOut}")
+            }
+        }
     }
 
     private fun disposeResources() {
         ignoringErrors({ videoRecorder.dispose() })
         ignoringErrors({ webDriverAgent.stop() })
+        deleteSimulatorKeepingMetadata()
     }
 
     private fun ignoringErrors(action: () -> Unit?) {
@@ -658,9 +873,9 @@ class Simulator (
     }
 
     override fun crashLogs(pastMinutes: Long?): List<CrashLog> {
-        var crashLogFiles = listCrashLogs(pastMinutes)
+        val crashLogFiles = listCrashLogs(pastMinutes)
 
-        var crashLogs = crashLogFiles.map {
+        val crashLogs = crashLogFiles.map {
             val rv = remote.execIgnoringErrors(listOf("cat", it))
 
             if (rv.isSuccess) {
@@ -695,7 +910,7 @@ class Simulator (
 
         val result = remote.shell(cmd, returnOnFailure = true)
         if (!result.isSuccess) {
-            SimulatorError("Failed to list crash logs for $this: $result")
+            throw SimulatorError("Failed to list crash logs for $this: $result")
         }
         return result.stdOut
             .lineSequence()
@@ -723,24 +938,8 @@ class Simulator (
     }
 
     //endregion
-    override fun uninstallApplication(bundleId: String) {
-        logger.debug(logMarker, "Uninstalling application $bundleId from Simulator $this")
-
-        terminateApplication(bundleId)
-
-        val uninstallResult = remote.execIgnoringErrors(listOf("xcrun", "simctl", "uninstall", udid, bundleId))
-
-        if (!uninstallResult.isSuccess) {
-            logger.error(logMarker, "Uninstall application $bundleId was unsuccessful. Result $uninstallResult")
-        }
-    }
-
-    private fun terminateApplication(bundleId: String) {
-        val terminateResult = remote.execIgnoringErrors(listOf("xcrun", "simctl", "terminate", udid, bundleId))
-
-        if (!terminateResult.isSuccess) {
-            logger.error(logMarker, "Terminating application $bundleId was unsuccessful. Result $terminateResult")
-        }
+    override fun uninstallApplication(bundleId: String, appInstaller: AppInstaller) {
+        appInstaller.uninstallApplication(udid, bundleId)
     }
 
     override fun setEnvironmentVariables(envs: Map<String, String>) {

@@ -1,12 +1,18 @@
 package com.badoo.automation.deviceserver.host.management
 
+import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.DeviceServerConfig
 import com.badoo.automation.deviceserver.data.*
-import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.host.management.errors.NoNodesRegisteredException
 import com.badoo.automation.deviceserver.ios.ActiveDevices
+import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.net.URL
+import java.time.Duration
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.TimeUnit
+import kotlin.system.measureNanoTime
 
 class DeviceManager(
         config: DeviceServerConfig,
@@ -20,6 +26,31 @@ class DeviceManager(
             nodeFactory = nodeFactory,
             nodeRegistry = nodeRegistry
     )
+
+    fun cleanupTemporaryFiles() {
+        val tmpDir: String = when {
+            System.getProperty("os.name") == "Linux" -> "/tmp"
+            System.getenv("TMPDIR") != null -> System.getenv("TMPDIR")
+            else -> throw RuntimeException("Unknown TEMP directory to clean up")
+        }
+
+        File(tmpDir).walk().forEach {
+            if (it.isFile && (it.name.contains(".app.zip.") || it.name.contains(Regex("videoRecording_.*(mjpeg|mp4)")))) {
+                try {
+                    logger.debug("Cleanup: deleting temporary file ${it.absolutePath}")
+                    it.delete()
+                } catch (e: RuntimeException) {
+                    logger.error("Failed to cleanup file ${it.absolutePath}. Error: ${e.message}", e)
+                }
+            }
+        }
+
+        val appCache = ApplicationConfiguration().appBundleCachePath
+        appCache.deleteRecursively()
+        appCache.mkdirs()
+
+        logger.debug("Cleanup complete.")
+    }
 
     fun startAutoRegisteringDevices() {
         autoRegistrar.startAutoRegistering()
@@ -124,12 +155,7 @@ class DeviceManager(
     }
 
     fun deleteReleaseDevice(ref: DeviceRef, reason: String) {
-        try { // using try-catch here not to expose tryGetNodeFor
-            nodeRegistry.activeDevices.releaseDevice(ref, reason)
-        } catch (e: DeviceNotFoundException) {
-            logger.warn("Skipping $ref release because no node knows about it")
-            return
-        }
+        nodeRegistry.deleteReleaseDevice(ref, reason)
     }
 
     fun getDeviceRefs() : List<DeviceDTO> {
@@ -183,5 +209,56 @@ class DeviceManager(
 
     fun updateApplicationPlist(deviceRef: String, plistEntry: PlistEntryDTO) {
         return nodeRegistry.activeDevices.getNodeFor(deviceRef).updateApplicationPlist(deviceRef, plistEntry)
+    }
+
+    private val applicationsCache: ConcurrentHashMap<String, ApplicationBundle> = ConcurrentHashMap()
+
+    fun installApplication(ref: String, dto: AppBundleDto) {
+        nodeRegistry.activeDevices.getNodeFor(ref).installApplication(ref, dto)
+    }
+
+    fun appInstallationStatus(ref: String): Map<String, Boolean> {
+        return nodeRegistry.activeDevices.getNodeFor(ref).appInstallationStatus(ref)
+    }
+
+    fun deployApplication(dto: AppBundleDto) {
+        val marker = MapEntriesAppendingMarker(mapOf("operation" to "app_deploy"))
+        val appBundle = applicationsCache.computeIfAbsent(dto.appUrl) { acquireBundle(dto, marker) }
+
+        logger.debug(marker, "Starting to deploy application ${dto.appUrl}")
+
+        if (!appBundle.isDeployed) {
+            nodeRegistry.getAll().parallelStream().forEach { nodeWrapper ->
+                nodeWrapper.node.deployApplication(appBundle)
+            }
+            appBundle.isDeployed = true
+        }
+
+        logger.debug(marker, "Successfully deployed application ${dto.appUrl}")
+    }
+
+    private fun acquireBundle(dto: AppBundleDto, marker: MapEntriesAppendingMarker): ApplicationBundle {
+        val appBundle = ApplicationBundle(URL(dto.appUrl))
+        if (!appBundle.isDownloaded) {
+            downloadApplicationBinary(marker, appBundle)
+            appBundle.unpack(logger, marker)
+        }
+        return appBundle
+    }
+
+    private fun downloadApplicationBinary(marker: MapEntriesAppendingMarker, appBundle: ApplicationBundle) {
+        var size: Long = 0
+        val nanos = measureNanoTime {
+            logger.debug(marker, "Downloading app bundle to cache ${appBundle.appUrl}. Url: ${appBundle.appUrl}")
+            appBundle.downloadApp(logger, marker)
+            size = appBundle.bundleZip.length()
+        }
+        val seconds = TimeUnit.NANOSECONDS.toSeconds(nanos)
+        val measurement = mutableMapOf(
+            "action_name" to "download_application",
+            "duration" to seconds,
+            "app_size" to size.shr(20) // Bytes to Megabytes
+        )
+        logger.debug(MapEntriesAppendingMarker(measurement), "Successfully downloaded application ${appBundle.appUrl} size: $size bytes. Took $seconds seconds")
     }
 }

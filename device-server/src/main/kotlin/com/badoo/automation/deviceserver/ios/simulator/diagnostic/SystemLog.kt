@@ -4,6 +4,7 @@ import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.command.ShellUtils
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.host.IRemote
+import com.badoo.automation.deviceserver.ios.simulator.data.DataContainerException
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker

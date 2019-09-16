@@ -6,9 +6,12 @@ import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.management.DeviceManager
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.auth.UserIdPrincipal
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class DevicesController(private val deviceManager: DeviceManager) {
     private val happy = emptyMap<Unit, Unit>()
+    private val asyncTasksExecutorService: ExecutorService = Executors.newCachedThreadPool()
 
     fun getDeviceRefs(): List<DeviceDTO> {
         return deviceManager.getDeviceRefs()
@@ -34,7 +37,9 @@ class DevicesController(private val deviceManager: DeviceManager) {
     }
 
     fun deleteReleaseDevice(ref: DeviceRef): EmptyMap {
-        deviceManager.deleteReleaseDevice(ref, "httpRequest")
+        asyncTasksExecutorService.submit {
+            deviceManager.deleteReleaseDevice(ref, "httpRequest")
+        }
         return happy
     }
 
@@ -172,5 +177,19 @@ class DevicesController(private val deviceManager: DeviceManager) {
     fun updateApplicationPlist(deviceRef: String, plistEntry: PlistEntryDTO): Any {
         deviceManager.updateApplicationPlist(deviceRef, plistEntry)
         return happy
+    }
+
+    fun deployApplication(appBundleDto: AppBundleDto): EmptyMap {
+        deviceManager.deployApplication(appBundleDto)
+        return happy
+    }
+
+    fun installApplication(ref: String, appBundleDto: AppBundleDto): EmptyMap {
+        deviceManager.installApplication(ref, appBundleDto)
+        return happy
+    }
+
+    fun appInstallationStatus(ref: String): Map<String, Boolean> {
+        return deviceManager.appInstallationStatus(ref)
     }
 }

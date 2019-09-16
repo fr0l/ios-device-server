@@ -7,12 +7,14 @@ import com.nhaarman.mockito_kotlin.doAnswer
 import com.nhaarman.mockito_kotlin.whenever
 import okhttp3.OkHttpClient
 import org.junit.Assert.assertEquals
+import org.junit.Ignore
 import org.junit.Test
 import java.io.IOException
 import java.net.URL
 import java.net.UnknownHostException
 
 class CustomHttpClientTest {
+    @Ignore
     @Test fun unknownHost() {
         val httpClient = mockThis<OkHttpClient>()
         whenever(httpClient.newCall(any())).doAnswer { throw UnknownHostException() }

@@ -1,5 +1,6 @@
 package com.badoo.automation.deviceserver.ios.simulator.backup
 
+import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.JsonMapper
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.command.CommandResult
@@ -17,10 +18,14 @@ import java.io.IOException
 class SimulatorBackup(
         private val remote: IRemote,
         private val udid: UDID,
-        deviceSetPath: String
+        deviceSetPath: String,
+        private val simulatorDirectory: File,
+        private val simulatorDataDirectory: File,
+        config: ApplicationConfiguration = ApplicationConfiguration()
 ) : ISimulatorBackup {
-    private val srcPath: String = File(deviceSetPath, udid).absolutePath
-    private val backupPath: String = File(deviceSetPath, udid).absolutePath + "_BACKUP"
+    private val backupPath: String = File(config.simulatorBackupPath ?: deviceSetPath , udid).absolutePath + "_BACKUP"
+    private val backedDataFolder = File(backupPath, "data").absolutePath
+
     private val metaFilePath: String = File(backupPath, "data/device_server/meta.json").absolutePath
     private val metaFileDirectory = File(metaFilePath).parent
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
@@ -30,7 +35,7 @@ class SimulatorBackup(
     ))
 
     companion object {
-        const val CURRENT_VERSION = 1
+        const val CURRENT_VERSION = 4
     }
 
     data class BackupMeta(val version: Int, val created: String) {
@@ -69,9 +74,25 @@ class SimulatorBackup(
     //region create backup
     override fun create() {
         remote.execIgnoringErrors(listOf("rm", "-rf", backupPath))
-        val result = remote.execIgnoringErrors(listOf("cp", "-R", srcPath, backupPath))
+        val result = remote.execIgnoringErrors(listOf("cp", "-Rp", simulatorDirectory.absolutePath, backupPath), timeOutSeconds = 120)
 
-        ensureSuccess(result, "$this failed to create backup $backupPath: $result")
+        if (!result.isSuccess) {
+            val stdOutLines = result.stdOut.lines().map { it.trim() }.filter { it.isNotBlank() }
+
+            val ignorableFailures = stdOutLines.filter { it.contains("Deleting") && it.contains("No such file or directory") }
+
+            if (ignorableFailures.isNotEmpty()) {
+                logger.warn(logMarker, "Failed to copy ignorable files while creating backup for simulator $udid at path: [$backupPath]: ${ignorableFailures.joinToString(", ")}")
+            }
+
+            val failures = stdOutLines.filter { !it.contains("Deleting") && !it.contains("No such file or directory") }
+
+            if (failures.isNotEmpty()) {
+                val message = "Failed to copy files while creating backup for simulator $udid at path: [$backupPath]: ${failures.joinToString(", ")}"
+                logger.error(logMarker, message)
+                throw SimulatorBackupError("$this failed to create backup $backupPath: $result", SimulatorBackupError(message))
+            }
+        }
 
         writeMeta()
         logger.debug(logMarker, "Created backup for simulator $udid at path: [$backupPath]")
@@ -94,7 +115,7 @@ class SimulatorBackup(
                 }
             }
             else -> {
-                remote.execIgnoringErrors("mkdir -p $metaFileDirectory".split(" "))
+                remote.execIgnoringErrors(listOf("mkdir", "-p", metaFileDirectory))
                 val result = remote.shell(
                     "echo ${ShellUtils.escape(content)} > $metaFilePath",
                     returnOnFailure = true
@@ -106,15 +127,39 @@ class SimulatorBackup(
     //endregion
 
     override fun restore() {
-        remote.execIgnoringErrors(listOf("rm", "-rf", srcPath))
-        val result = remote.execIgnoringErrors(listOf("cp", "-R", backupPath, srcPath))
+        val simulatorDataDirectoryPath = simulatorDataDirectory.absolutePath
+        val deleteResult = remote.execIgnoringErrors(listOf("/bin/rm", "-rf", simulatorDataDirectoryPath), timeOutSeconds = 90L)
 
-        ensureSuccess(result, "$this failed to restore from backup $backupPath: $result")
-        logger.debug(logMarker, "Restored simulator $udid from backup at path: [$backupPath]")
+        if (!deleteResult.isSuccess) {
+            logger.error(logMarker, "Failed to delete at path: [$simulatorDataDirectoryPath]. Result: $deleteResult")
+
+            val r = remote.execIgnoringErrors(listOf("/usr/bin/sudo", "/bin/rm", "-rf", simulatorDataDirectoryPath), timeOutSeconds = 90L);
+
+            if (!r.isSuccess) {
+                val undeletedFiles = remote.execIgnoringErrors(listOf("/usr/bin/find", simulatorDataDirectoryPath), timeOutSeconds = 90L);
+                logger.error(logMarker, "Failed to delete at path: [$simulatorDataDirectoryPath]. Not deleted files: ${undeletedFiles.stdOut}")
+            }
+        }
+
+        val result = remote.execIgnoringErrors(listOf("/bin/cp", "-Rfp", backedDataFolder, simulatorDirectory.absolutePath), timeOutSeconds = 120L)
+
+        if (!result.isSuccess) {
+            logger.error(logMarker, "Failed to restore from backup at path: [$backedDataFolder] to path: [$result]")
+
+            val secondTry = remote.execIgnoringErrors(listOf("/bin/cp", "-Rfp", backedDataFolder, simulatorDirectory.absolutePath), timeOutSeconds = 120L)
+
+            if (!secondTry.isSuccess) {
+                val errorMessage = "Failed second attempt to restore from backup at path: [$backedDataFolder] to path: [$secondTry]"
+                logger.error(logMarker, errorMessage)
+                throw SimulatorBackupError(errorMessage)
+            }
+        }
+
+        logger.debug(logMarker, "Restored simulator $udid from backup at path: [$backedDataFolder]")
     }
 
     override fun delete() {
-        val result = remote.execIgnoringErrors("rm -rf $backupPath".split(" "))
+        val result = remote.execIgnoringErrors(listOf("/bin/rm", "-rf", backupPath))
 
         ensureSuccess(result, "$this failed to delete backup $backupPath: $result")
         logger.debug(logMarker, "Deleted backup for simulator $udid at path: [$backupPath]")

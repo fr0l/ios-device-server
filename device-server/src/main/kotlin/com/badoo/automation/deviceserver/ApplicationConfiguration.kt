@@ -3,6 +3,7 @@ package com.badoo.automation.deviceserver
 import com.badoo.automation.deviceserver.ios.proc.SimulatorWebDriverAgent
 import com.badoo.automation.deviceserver.ios.simulator.video.SimulatorVideoRecorder
 import java.lang.Boolean.getBoolean
+import java.io.File
 
 class ApplicationConfiguration {
     private val wdaSimulatorBundlePathProperty = "wda.bundle.path"
@@ -32,4 +33,7 @@ class ApplicationConfiguration {
     val videoRecorderFrameRate = Integer.getInteger("video.recorder.frame.rate", 4)
     val simulatorWdaClassName = System.getProperty("simulator.wda.class", SimulatorWebDriverAgent::class.qualifiedName)
     val shouldPreinstallWDA: Boolean = getBoolean("preinstall.simulator.wda")
+    val appBundleCachePath: File = File(System.getProperty("app.bundle.cache.path", System.getenv("HOME")), "app_bundle_cache")
+    val appBundleCacheRemotePath: File = File(System.getProperty("app.bundle.cache.remote.path", "/Users/qa/app_bundle_cache"))
+    val simulatorBackupPath: String? = System.getProperty("simulator.backup.path")
 }
