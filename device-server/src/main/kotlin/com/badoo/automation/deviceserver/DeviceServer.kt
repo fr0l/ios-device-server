@@ -105,7 +105,6 @@ fun Application.module() {
     )
     val deviceManager = DeviceManager(config, hostFactory)
     deviceManager.startAutoRegisteringDevices()
-    deviceManager.launchAutoReleaseLoop()
 
     val devicesController = DevicesController(deviceManager)
     val statusController = StatusController(deviceManager)

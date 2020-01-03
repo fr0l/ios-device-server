@@ -86,7 +86,7 @@ class NodeRegistry(val activeDevices: ActiveDevices = ActiveDevices()) {
         ))
         logger.info(logMarker, "Create device started, register with timeout ${deviceTimeout.seconds} secs")
 
-        activeDevices.registerDevice(dto.ref, node, deviceTimeout, userId)
+        activeDevices.registerDevice(dto.ref, node, userId)
 
         return dto
     }
