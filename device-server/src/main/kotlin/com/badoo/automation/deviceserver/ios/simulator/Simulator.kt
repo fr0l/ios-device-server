@@ -535,7 +535,7 @@ class Simulator (
 
     //region approveAccess
 
-    override fun approveAccess(bundleId: String) {
+    override fun approveAccess(bundleId: String, locationPermissionsLock: ReentrantLock) {
         val permissions = SimulatorPermissions(remote, deviceSetPath, this)
 
         val set = PermissionSet()
@@ -547,13 +547,13 @@ class Simulator (
             PermissionType.Contacts to PermissionAllowed.Yes
         ))
 
-        permissions.setPermissions(bundleId, set)
+        permissions.setPermissions(bundleId, set, locationPermissionsLock)
     }
 
-    override fun setPermissions(bundleId: String, permissions: PermissionSet) {
+    override fun setPermissions(bundleId: String, permissions: PermissionSet, locationPermissionsLock: ReentrantLock) {
         val manager = SimulatorPermissions(remote, deviceSetPath, this)
 
-        manager.setPermissions(bundleId, permissions)
+        manager.setPermissions(bundleId, permissions, locationPermissionsLock)
     }
 
     //endregion
