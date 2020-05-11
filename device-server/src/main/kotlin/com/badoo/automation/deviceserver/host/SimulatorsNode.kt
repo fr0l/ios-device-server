@@ -248,6 +248,10 @@ class SimulatorsNode(
         getDeviceFor(deviceRef).approveAccess(bundleId, locationPermissionsLock)
     }
 
+    override fun sendPushNotification(deviceRef: DeviceRef, bundleId: String, notificationContent: ByteArray) {
+        getDeviceFor(deviceRef).sendPushNotification(bundleId, notificationContent)
+    }
+
     override fun setPermissions(deviceRef: DeviceRef, appPermissions: AppPermissionsDto) {
         getDeviceFor(deviceRef).setPermissions(appPermissions.bundleId, appPermissions.permissions, locationPermissionsLock)
     }
