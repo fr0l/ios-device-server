@@ -2,16 +2,12 @@ package com.badoo.automation.deviceserver.host
 
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.*
-import com.badoo.automation.deviceserver.data.DeviceType
 import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.host.management.PortAllocator
-import com.badoo.automation.deviceserver.host.management.XcodeVersion
-import com.badoo.automation.deviceserver.host.management.XcodeVersion.Companion.REQUIRED_XCODE_VERSION
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.ios.device.*
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
-import com.badoo.automation.deviceserver.simctl.models.Simulator
 import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.WdaDeviceBundle
 import net.logstash.logback.marker.MapEntriesAppendingMarker
@@ -22,7 +18,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardOpenOption
 import java.time.Duration
-import java.util.concurrent.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Future
+import java.util.concurrent.TimeUnit
 
 class DevicesNode(
     private val remote: IRemote,
@@ -324,7 +322,7 @@ class DevicesNode(
         return device.lastCrashLog()
     }
 
-    override fun listApps(deviceRef: DeviceRef): List<FBSimctlAppInfo> = slotByExternalRef(deviceRef).device.listApps()
+    override fun listApps(deviceRef: DeviceRef): List<AppInfo> = slotByExternalRef(deviceRef).device.listApps()
 
     override fun locationListScenarios(deviceRef: DeviceRef): List<String> {
         unsupportedOnPhysicalDevice("Location commands")

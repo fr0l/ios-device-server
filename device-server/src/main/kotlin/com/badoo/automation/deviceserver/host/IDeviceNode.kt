@@ -3,7 +3,7 @@ package com.badoo.automation.deviceserver.host
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.ios.IDevice
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import java.io.File
 import java.net.URL
 import java.nio.file.Path
@@ -87,7 +87,7 @@ interface IDeviceNode {
     fun deployApplication(appBundle: ApplicationBundle)
     fun isApplicationDeployed(appBundle: ApplicationBundle): Boolean
     fun resetAppBundleCache()
-    fun listApps(deviceRef: DeviceRef): List<FBSimctlAppInfo>
+    fun listApps(deviceRef: DeviceRef): List<AppInfo>
     fun locationListScenarios(deviceRef: DeviceRef): List<String>
     fun locationClear(deviceRef: DeviceRef)
     fun locationSet(deviceRef: DeviceRef, latitude: Double, longitude: Double)

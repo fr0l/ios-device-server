@@ -1,11 +1,9 @@
 package com.badoo.automation.deviceserver.data
 
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlDevice
 import com.badoo.automation.deviceserver.simctl.models.Simulator
 
 typealias UDID = String
 
-// FIXME: DeviceInfo is same as FBSimctlDevice
 data class DeviceInfo (
         val udid: UDID,
         val model: String,
@@ -13,9 +11,6 @@ data class DeviceInfo (
         val arch: String,
         val name: String
 ) {
-    constructor(device: FBSimctlDevice):
-            this(device.udid, device.model, device.os, device.arch, device.name)
-
     constructor(device: Simulator):
             this(
                 udid = device.udid,

@@ -4,7 +4,7 @@ import com.badoo.automation.deviceserver.EmptyMap
 import com.badoo.automation.deviceserver.JsonMapper
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.management.DeviceManager
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.fasterxml.jackson.databind.JsonNode
 import io.ktor.server.auth.UserIdPrincipal
 import java.io.File
@@ -121,7 +121,7 @@ class DevicesController(private val deviceManager: DeviceManager) {
         }
     }
 
-    fun listApps(ref: DeviceRef): List<FBSimctlAppInfo> = deviceManager.listApps(ref)
+    fun listApps(ref: DeviceRef): List<AppInfo> = deviceManager.listApps(ref)
 
     fun crashLogs(ref: DeviceRef, appName: String?): List<Map<String, String>> {
         val logs = deviceManager.crashLogs(ref, appName)

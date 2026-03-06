@@ -1,0 +1,7 @@
+.DS_Store
+.gradle/
+build/
+.idea/
+buildSrc/.gradle
+buildSrc/build/
+src/main/resources/META-INF/native-image/reachability-metadata.json.backup

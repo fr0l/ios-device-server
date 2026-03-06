@@ -3,7 +3,7 @@ package com.badoo.automation.deviceserver.util
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.host.IRemote
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlError
+import com.badoo.automation.deviceserver.ios.device.DeviceCtlError
 import com.badoo.automation.deviceserver.ios.simulator.data.DataContainerException
 import com.badoo.automation.deviceserver.ios.simulator.data.FileSystem
 import net.logstash.logback.marker.MapEntriesAppendingMarker
@@ -169,11 +169,11 @@ class AppInstaller(
         val nanos = measureNanoTime {
             logger.debug(
                 logMarker,
-                "Will install application $appUrl on device $udid using fbsimctl install ${appBinaryPath.absolutePath}"
+                "Will install application $appUrl on device $udid using devicectl install ${appBinaryPath.absolutePath}"
             )
             try {
-                remote.fbsimctl.installApp(udid, appBinaryPath)
-            } catch (e: FBSimctlError) {
+                remote.deviceCtl.installApp(udid, appBinaryPath)
+            } catch (e: DeviceCtlError) {
                 logger.error(logMarker, "Error happened while installing the app $appUrl on $udid", e)
                 return InstallResult(false, e.message)
             }

@@ -22,7 +22,7 @@ data class DesiredCapabilities(
         val isSimulatorClone: Boolean = true,
 
         @JsonProperty("device_type")
-        val deviceType: DeviceType
+        val deviceType: DeviceType? = null
 ) {
         val osVersion: String? get() = os?.substringAfter("iOS")?.trim()
         val osMajorVersion: Int? get() = os?.substringAfter("iOS")?.trim()?.split(".")?.first()?.toInt()
@@ -51,7 +51,7 @@ data class DesiredCapabilities(
                 result = 31 * result + (arch?.hashCode() ?: 0)
                 result = 31 * result + useWda.hashCode()
                 result = 31 * result + isSimulatorClone.hashCode()
-                result = 31 * result + deviceType.hashCode()
+                result = 31 * result + (deviceType?.hashCode() ?: 0)
                 return result
         }
 }

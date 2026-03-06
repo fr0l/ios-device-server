@@ -6,8 +6,7 @@ import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.IRemote
 import com.badoo.automation.deviceserver.ios.IDevice
 import com.badoo.automation.deviceserver.ios.device.diagnostic.RealDeviceSysLog
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlDeviceState
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.proc.*
 import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
 import com.badoo.automation.deviceserver.ios.simulator.video.FFMPEGVideoRecorder
@@ -135,8 +134,7 @@ class Device(
             return
         }
 
-        val currentState = remote.fbsimctl.listDevice(udid)?.state
-        val isBooted = currentState == FBSimctlDeviceState.BOOTED.value
+        val isBooted = remote.deviceCtl.getDevice(udid)?.isConnected == true
 
         if (!isBooted) {
             return
@@ -144,7 +142,7 @@ class Device(
 
         val isWdaHealty = instrumentationAgent.isHealthy()
 
-        // check if WDA or fbsimctl crashed after being ok for some time
+        // check if WDA crashed after being ok for some time
 
         if (isWdaHealty) {
             status.wdaStatusRetries = 0
@@ -310,20 +308,20 @@ class Device(
         }
     }
 
-    override fun listApps(): List<FBSimctlAppInfo> = remote.fbsimctl.listApps(udid)
+    override fun listApps(): List<AppInfo> = remote.deviceCtl.listApps(udid)
 
     private fun uninstallUserApps(whitelistedApps: Set<String>) {
         logger.debug(logMarker, "About to uninstall user apps on $this")
-        val listApps = remote.fbsimctl.listApps(udid)
+        val listApps = remote.deviceCtl.listApps(udid)
         val userApps = listApps
-            .filter { it.install_type != null && it.install_type.startsWith("user") }
-            .map { it.bundle.bundle_id }
+            .filter { it.installType == "user" }
+            .map { it.bundleId }
 
         val bundlesToUninstall = userApps.toSet() - whitelistedApps
         logger.info(logMarker, "Uninstalling user apps: $bundlesToUninstall")
 
         bundlesToUninstall.forEach {
-            remote.fbsimctl.uninstallApp(udid, it)
+            remote.deviceCtl.uninstallApp(udid, it)
         }
         logger.debug(logMarker, "Uninstalled user apps on $this")
     }
@@ -458,7 +456,7 @@ class Device(
     }
 
     override fun uninstallApplication(bundleId: String, appInstaller: AppInstaller) {
-        remote.fbsimctl.uninstallApp(udid, bundleId)
+        remote.deviceCtl.uninstallApp(udid, bundleId)
     }
 
     private companion object {

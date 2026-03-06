@@ -5,6 +5,14 @@ import com.badoo.automation.deviceserver.host.IRemote
 
 class DeviceInfoProvider(private val remote: IRemote) {
     fun list(): List<DeviceInfo> {
-        return remote.fbsimctl.listDevices().map { DeviceInfo(it) }
+        return remote.goIos.listDevices().map { device ->
+            DeviceInfo(
+                udid = device.udid,
+                model = device.model,
+                os = "iOS ${device.osVersion}",
+                arch = device.arch,
+                name = device.name
+            )
+        }
     }
 }

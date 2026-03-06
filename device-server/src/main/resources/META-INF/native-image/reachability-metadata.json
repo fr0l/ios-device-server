@@ -2570,6 +2570,110 @@
       "allPublicFields": true,
       "queryAllPublicConstructors": true,
       "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.host.management.HostChecker",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.DeviceCtlError",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.DeviceInfo",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.GoIos",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.GoIos$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.XcrunDeviceCtl",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.XcrunDeviceCtl$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.simctl.SimCtlControl",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.simctl.SimCtlControl$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.simctl.SimCtlControl$SimctlAppEntry",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.PhysicalDeviceInfo",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.simctl.SimCtlUtility$SimctlAppEntry",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
     }
   ],
   "resources": [

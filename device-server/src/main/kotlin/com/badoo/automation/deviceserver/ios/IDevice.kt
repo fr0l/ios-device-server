@@ -1,7 +1,7 @@
 package com.badoo.automation.deviceserver.ios
 
 import com.badoo.automation.deviceserver.data.*
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.simulator.video.VideoRecorder
 import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.InstallResult
@@ -54,5 +54,5 @@ interface IDevice {
 
     val instrumentationAgentLog: File
     val osLog: ISysLog
-    fun listApps(): List<FBSimctlAppInfo>
+    fun listApps(): List<AppInfo>
 }

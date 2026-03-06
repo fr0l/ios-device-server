@@ -66,11 +66,8 @@ class HostChecker(
     fun cleanup() {
         try {
             logger.info(logMarker, "Will shutdown booted simulators")
-            remote.fbsimctl.shutdownAllBooted()
+            remote.exec(listOf("/usr/bin/xcrun", "simctl", "shutdown", "all"), mapOf(), true, 180)
             logger.info(logMarker, "Done shutting down booted simulators")
-            logger.info(logMarker, "Will kill abandoned long living fbsimctl processes")
-            remote.pkill(remote.fbsimctl.fbsimctlBinary, true)
-            remote.pkill("fbsimctl", true)
         } catch (e: Exception) {
             logger.warn(logMarker, "Failed to shutdown simulator because: ${e.javaClass}: message: [${e.message}]")
         }

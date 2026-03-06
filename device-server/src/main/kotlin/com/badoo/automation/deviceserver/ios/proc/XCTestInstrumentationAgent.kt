@@ -103,7 +103,11 @@ class XCTestInstrumentationAgent(
     override fun toString(): String = "DeviceAgent at $udid at ${remote.hostName}:${wdaEndpoint.port}"
 
     private fun installHostApp(instrumentationBundle: WdaBundle) {
-        remote.fbsimctl.installApp(udid, instrumentationBundle.bundlePath())
+        if (isRealDevice) {
+            remote.deviceCtl.installApp(udid, instrumentationBundle.bundlePath())
+        } else {
+            remote.simCtlControl.installApp(udid, instrumentationBundle.bundlePath())
+        }
         val timeout = 3000L
         logger.debug("Waiting $timeout ms after install")
         Thread.sleep(timeout)
@@ -127,12 +131,20 @@ class XCTestInstrumentationAgent(
         cleanupLogs()
         prepareXctestrunFile(instrumentationBundle)
 
-        val installedApps = remote.fbsimctl.listApps(udid).map { it.bundle.bundle_id }
+        val installedApps = if (isRealDevice) {
+            remote.deviceCtl.listApps(udid).map { it.bundleId }
+        } else {
+            remote.simCtlControl.listApps(udid).map { it.bundleId }
+        }
         val instrumentationBundleIds = listOf(instrumentationDaBundle.bundleId, instrumentationWdaBundle.bundleId)
         installedApps.forEach { installedBundleId ->
             if (instrumentationBundleIds.contains(installedBundleId)) {
                 logger.debug(logMarker, "$this — Uninstalling previously installed app with bundle id: $installedBundleId")
-                remote.fbsimctl.uninstallApp(udid, installedBundleId, false)
+                if (isRealDevice) {
+                    remote.deviceCtl.uninstallApp(udid, installedBundleId)
+                } else {
+                    remote.simCtlControl.uninstallApp(udid, installedBundleId)
+                }
             }
         }
 

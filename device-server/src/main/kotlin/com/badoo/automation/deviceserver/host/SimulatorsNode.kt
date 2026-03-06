@@ -8,7 +8,7 @@ import com.badoo.automation.deviceserver.data.DeviceType
 import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.errors.OverCapacityException
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.simulator.ISimulator
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
 import com.badoo.automation.deviceserver.repository.SimulatorRepository
@@ -389,7 +389,7 @@ class SimulatorsNode(
         return DeviceDTO(getDeviceFor(deviceRef))
     }
 
-    override fun listApps(deviceRef: DeviceRef): List<FBSimctlAppInfo> = getDeviceFor(deviceRef).listApps()
+    override fun listApps(deviceRef: DeviceRef): List<AppInfo> = getDeviceFor(deviceRef).listApps()
     // endregion
 
     // region: Simulator Media operations

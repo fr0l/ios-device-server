@@ -3,17 +3,25 @@ package com.badoo.automation.deviceserver.simctl
 import com.badoo.automation.deviceserver.command.CommandResult
 import com.badoo.automation.deviceserver.command.IShellCommand
 import com.badoo.automation.deviceserver.data.UDID
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.simctl.models.DeviceType
 import com.badoo.automation.deviceserver.simctl.models.Simulator
 import com.badoo.automation.deviceserver.simctl.models.SimulatorRuntime
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
 import org.slf4j.Marker
+import java.io.File
 import java.time.Duration
 
-internal class SimCtlUtility(
+class SimCtlUtility(
     private val commandExecutor: IShellCommand
 ) {
+    private val jacksonMapper = jacksonObjectMapper()
+
     companion object {
         const val SIMCTL_LIST_DEVICES_JSON = "/usr/bin/xcrun simctl list devices --json"
         const val SIMCTL_LIST_DEVICE_TYPES_JSON = "/usr/bin/xcrun simctl list devicetypes --json"
@@ -200,6 +208,68 @@ internal class SimCtlUtility(
 
     fun deleteUnavailableSimulators() {
         deleteSimulator("unavailable")
+    }
+    // endregion
+
+    // region: App Management
+    fun listApps(udid: UDID): List<AppInfo> {
+        val result = commandExecutor.exec(
+            listOf("/usr/bin/xcrun", "simctl", "listapps", udid),
+            timeOut = Duration.ofSeconds(30)
+        )
+        if (!result.isSuccess) {
+            throw SimCtlException("simctl listapps failed for $udid: ${result.stdErr}")
+        }
+        val entries: Map<String, SimctlAppEntry> = jacksonMapper.readValue(result.stdOut)
+        return entries.values.map { it.toAppInfo() }
+    }
+
+    fun terminateApp(udid: UDID, bundleId: String) {
+        commandExecutor.exec(
+            listOf("/usr/bin/xcrun", "simctl", "terminate", udid, bundleId),
+            timeOut = Duration.ofSeconds(30),
+            returnFailure = true
+        )
+    }
+
+    fun uninstallApp(udid: UDID, bundleId: String) {
+        val result = commandExecutor.exec(
+            listOf("/usr/bin/xcrun", "simctl", "uninstall", udid, bundleId),
+            timeOut = Duration.ofSeconds(60),
+            returnFailure = true
+        )
+        if (!result.isSuccess) {
+            throw SimCtlException("simctl uninstall failed for $bundleId on $udid: ${result.stdErr}")
+        }
+    }
+
+    fun installApp(udid: UDID, bundlePath: File) {
+        val result = commandExecutor.exec(
+            listOf("/usr/bin/xcrun", "simctl", "install", udid, bundlePath.absolutePath),
+            timeOut = Duration.ofSeconds(120),
+            returnFailure = true
+        )
+        if (!result.isSuccess) {
+            throw SimCtlException("simctl install failed for ${bundlePath.absolutePath} on $udid: ${result.stdErr}")
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    private data class SimctlAppEntry(
+        @JsonProperty("CFBundleIdentifier") val bundleId: String?,
+        @JsonProperty("ApplicationType") val applicationType: String?,
+        @JsonProperty("DataContainer") val dataContainer: String?,
+        @JsonProperty("BundlePath") val bundlePath: String?,
+        @JsonProperty("CFBundleDisplayName") val displayName: String?,
+        @JsonProperty("CFBundleName") val bundleName: String?
+    ) {
+        fun toAppInfo() = AppInfo(
+            bundleId = bundleId ?: "",
+            name = displayName ?: bundleName,
+            bundlePath = bundlePath,
+            dataContainer = dataContainer,
+            installType = applicationType?.lowercase()
+        )
     }
     // endregion
 }

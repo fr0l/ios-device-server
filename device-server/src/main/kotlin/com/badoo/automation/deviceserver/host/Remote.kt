@@ -3,8 +3,9 @@ package com.badoo.automation.deviceserver.host
 import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.command.*
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctl
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlResponseParser
+import com.badoo.automation.deviceserver.ios.device.GoIos
+import com.badoo.automation.deviceserver.ios.device.XcrunDeviceCtl
+import com.badoo.automation.deviceserver.simctl.SimCtlUtility
 import com.badoo.automation.deviceserver.util.ensure
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
@@ -17,20 +18,11 @@ class Remote(
     override val hostName: String,
     override val publicHostName: String,
     override val commandExecutor: IShellCommand = ShellCommand(),
-    override val fbsimctl: FBSimctl = FBSimctl(commandExecutor, getHomeBrewPath(), FBSimctlResponseParser()),
     appConfig: ApplicationConfiguration = ApplicationConfiguration()
 ) : IRemote {
     companion object {
         fun getLocalCommandExecutor(): IShellCommand {
             return ShellCommand()
-        }
-
-        fun getHomeBrewPath(): File {
-            return when {
-                File("/opt/homebrew/Cellar").isDirectory -> File("/opt/homebrew/bin")
-                File("/usr/local/Cellar").isDirectory -> File("/usr/local/bin")
-                else -> throw RuntimeException("Failed to find Homebrew directory")
-            }
         }
     }
 
@@ -41,11 +33,13 @@ class Remote(
 
     override fun toString(): String = "<Node:$publicHostName>"
 
-    override val homeBrewPath: File by lazy {
-        getHomeBrewPath()
-    }
+    override val homeBrewPath: File = File("/usr/local/bin")
 
     override val tmpDir: File = appConfig.tempFolder
+
+    override val simCtlControl: SimCtlUtility = SimCtlUtility(commandExecutor)
+    override val deviceCtl: XcrunDeviceCtl = XcrunDeviceCtl(commandExecutor)
+    override val goIos: GoIos = GoIos(commandExecutor)
 
     override fun isReachable(): Boolean {
         // In distributed architecture, local node is always reachable.

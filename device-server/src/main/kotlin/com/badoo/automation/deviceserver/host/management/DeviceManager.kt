@@ -11,7 +11,7 @@ import com.badoo.automation.deviceserver.host.Remote
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesException
 import com.badoo.automation.deviceserver.ios.ActiveDevices
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.util.NetworkUtils
 import com.badoo.automation.deviceserver.util.deleteRecursivelyIfExist
 import com.badoo.automation.deviceserver.util.ensureDirectoryExists
@@ -127,7 +127,7 @@ class DeviceManager(
         return activeDevices.getNodeFor(ref).lastCrashLog(ref)
     }
 
-    fun listApps(ref: DeviceRef): List<FBSimctlAppInfo> = activeDevices.getNodeFor(ref).listApps(ref)
+    fun listApps(ref: DeviceRef): List<AppInfo> = activeDevices.getNodeFor(ref).listApps(ref)
 
     fun shake(ref: DeviceRef) {
         activeDevices.getNodeFor(ref).shake(ref)

@@ -4,7 +4,7 @@ import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.IRemote
-import com.badoo.automation.deviceserver.ios.fbsimctl.FBSimctlAppInfo
+import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.proc.*
 import com.badoo.automation.deviceserver.ios.simulator.data.*
 import com.badoo.automation.deviceserver.ios.simulator.diagnostic.OsLog
@@ -750,10 +750,10 @@ class Simulator(
     )
 
     override fun clearSafariCookies(): Map<String, String> {
-        val apps = remote.fbsimctl.listApps(udid)
+        val apps = remote.simCtlControl.listApps(udid)
         check(!apps.isEmpty()) { "Could not list apps for $this" }
 
-        val safari = apps.find { SAFARI_BUNDLE_ID == it.bundle.bundle_id }
+        val safari = apps.find { SAFARI_BUNDLE_ID == it.bundleId }
 
         if (safari == null) {
             throw IllegalStateException("$SAFARI_BUNDLE_ID not found in $apps for $this")
@@ -763,7 +763,7 @@ class Simulator(
         simulatorProcess.terminateChildProcess("SafariViewService")
 
         val cookieJarPaths = cookieJars.map { cookieJar ->
-            File(safari.data_container, listOf("Library", "Cookies", cookieJar).joinToString(File.separator)).absolutePath
+            File(safari.dataContainer, listOf("Library", "Cookies", cookieJar).joinToString(File.separator)).absolutePath
         }
 
         val cmd = mutableListOf("rm", "-f")
@@ -774,7 +774,7 @@ class Simulator(
         return mapOf("status" to "true")
     }
 
-    override fun listApps(): List<FBSimctlAppInfo> = remote.fbsimctl.listApps(udid)
+    override fun listApps(): List<AppInfo> = remote.simCtlControl.listApps(udid)
 
     override fun shake(): Boolean {
         val command = listOf("xcrun", "simctl", "notify_post", udid, "com.apple.UIKit.SimulatorShake")
