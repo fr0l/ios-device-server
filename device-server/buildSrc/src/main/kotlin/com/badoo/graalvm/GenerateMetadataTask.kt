@@ -12,11 +12,15 @@ import org.gradle.api.file.RegularFileProperty
 import org.gradle.api.tasks.InputDirectory
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
+import org.jetbrains.kotlin.CoreEnvironmentDeprecation
+import org.jetbrains.kotlin.cli.extensionsStorage
 import org.jetbrains.kotlin.cli.jvm.compiler.EnvironmentConfigFiles
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.jetbrains.kotlin.com.intellij.openapi.util.Disposer
 import org.jetbrains.kotlin.com.intellij.psi.PsiManager
 import org.jetbrains.kotlin.com.intellij.testFramework.LightVirtualFile
+import org.jetbrains.kotlin.compiler.plugin.CompilerPluginRegistrar
+import org.jetbrains.kotlin.compiler.plugin.ExperimentalCompilerApi
 import org.jetbrains.kotlin.config.CompilerConfiguration
 import org.jetbrains.kotlin.idea.KotlinFileType
 import org.jetbrains.kotlin.psi.*
@@ -37,6 +41,7 @@ abstract class GenerateMetadataTask : DefaultTask() {
   @get:OutputFile
   abstract val reportFile: RegularFileProperty
 
+  @OptIn(CompilerConfiguration.Internals::class, CoreEnvironmentDeprecation::class, ExperimentalCompilerApi::class)
   @TaskAction
   fun generate() {
     val srcDir = sourceDir.get().asFile
@@ -53,7 +58,7 @@ abstract class GenerateMetadataTask : DefaultTask() {
     // Setup Kotlin environment for PSI parsing
     val disposable = Disposer.newDisposable()
     try {
-      val configuration = CompilerConfiguration()
+      val configuration = CompilerConfiguration().apply { extensionsStorage = CompilerPluginRegistrar.ExtensionStorage() }
       val environment = KotlinCoreEnvironment.createForProduction(
         disposable,
         configuration,
@@ -251,8 +256,6 @@ abstract class GenerateMetadataTask : DefaultTask() {
           normalizedEntry.addProperty("allPublicConstructors", true)
           normalizedEntry.addProperty("allPublicMethods", true)
           normalizedEntry.addProperty("allPublicFields", true)
-          normalizedEntry.addProperty("queryAllPublicConstructors", true)
-          normalizedEntry.addProperty("queryAllPublicMethods", true)
           reflectionArray.add(normalizedEntry)
         } else {
           // Keep other types as-is (libraries, frameworks)
@@ -269,8 +272,6 @@ abstract class GenerateMetadataTask : DefaultTask() {
       entry.addProperty("allPublicConstructors", true)
       entry.addProperty("allPublicMethods", true)
       entry.addProperty("allPublicFields", true)
-      entry.addProperty("queryAllPublicConstructors", true)
-      entry.addProperty("queryAllPublicMethods", true)
       reflectionArray.add(entry)
     }
 
@@ -297,8 +298,6 @@ abstract class GenerateMetadataTask : DefaultTask() {
       entry.addProperty("allPublicConstructors", true)
       entry.addProperty("allPublicMethods", true)
       entry.addProperty("allPublicFields", true)
-      entry.addProperty("queryAllPublicConstructors", true)
-      entry.addProperty("queryAllPublicMethods", true)
       reportArray.add(entry)
     }
 
