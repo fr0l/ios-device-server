@@ -1,5 +1,26 @@
 # Changelog
 
+## Unreleased — host health endpoint
+
+Branch `addObservabilityControls`. `GET /status`, `/status/config` and `/quitquitquit` are unchanged.
+
+- New `GET /status/health` (no auth, always HTTP 200): `schema_version`, `generated_at`, `measured_at`,
+  `health` (`ok` | `degraded` | `failing`), `reasons` and `checks[]` of `{name, group, status, value, threshold,
+  message, critical, unit, details}`. Groups: `resources` (load per core, memory, swap, disk free on the simulator,
+  DerivedData and temp volumes, thermal state), `process` (uptime, build version and git commit, JVM heap and
+  threads, simulators in use vs limit, device manager readiness, `simctl list` time, Xcode version), `network`
+  (link type, speed and duplex, IP/subnet/VLAN/gateway, gateway ping, and DNS, TCP connect and HTTP first byte for
+  each `health.probe_urls`) and `time` (NTP offset).
+- Verdict: `failing` if any check fails, `degraded` if any degrades or a critical check is `unknown`. A probe that
+  cannot run (missing binary, timeout, unparsable output) reports `unknown` instead of failing the response. A
+  network target that does not answer is a measurement and fails its check.
+- Requests take milliseconds: system utilities run in the background every `health.refresh_seconds` (20).
+- `GET /status/health/metrics`: the same values in Prometheus text format (`device_server_health`,
+  `device_server_health_check_status`, `device_server_health_check_value`).
+- Config: new optional `health` section (`probe_urls`, `ntp_server`, `expected_subnets`, `expected_xcode_version`,
+  `thresholds`), see `config/config.schema.json`. The default `probe_urls` is only `https://storage.googleapis.com/`;
+  add your CI server in the host config.
+
 ## Unreleased — orphan simulator clones cleanup
 
 Branch `cleanSimulatorClones`. Clones survived a server restart, and a clone whose release failed stayed on disk
