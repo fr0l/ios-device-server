@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased — slim simulators (disabled launchd services)
+
+Branch `fixSimulatorDisableServices`. The server slimmed simulators down by booting them with
+`simctl boot <udid> --disabledJob=<label> ...`. Since Xcode 26 these arguments have no effect, so every simulator ran
+all ~220 processes (~3 GB). The server now migrates from `--disabledJob` arguments to a plist: before booting it
+writes the labels into the simulator's `disabled.plist`, which `launchd_sim` reads at start.
+
+Verified on Xcode 26.5 / iOS 26.5 with the same 5 jobs (`chronod`, `PosterBoard`, `siriknowledged`, `suggestd`,
+`corespeechd`) on fresh clones:
+
+- `simctl boot --disabledJob=<label>`: the boot succeeds (exit 0, no warning), and `simctl help boot` still lists
+  the flag, but all 5 jobs are running and `launchctl print-disabled` lists none of them.
+- `disabled.plist` written before boot: none of the 5 jobs runs, and `launchctl print-disabled` lists all 5 as disabled.
+
+With the full sample list: 219 processes / 2.97 GB → 76 / 0.98 GB per simulator.
+
+Config: `simulators.disabled_services` now takes bare launchd labels (`com.apple.chronod`), not
+`--disabledJob=com.apple.chronod`. See `config/singlehost-sample.json` for a list that keeps push, universal links
+and photos.
+
 ## Unreleased — client ports behind a relay
 
 Branch `portRelay` (on top of `removeFbsimctl`). Only `41800-42800` is open in the firewall, but simulator clones

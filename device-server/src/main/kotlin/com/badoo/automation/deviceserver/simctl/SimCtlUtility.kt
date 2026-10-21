@@ -150,9 +150,8 @@ class SimCtlUtility(
     // endregion
 
     // region: Boot & Shutdown Simulators
-    fun bootSimulator(udid: UDID, disabledServices: List<String>, timeOut: Duration, logMarker: Marker) {
-        val command = mutableListOf("/usr/bin/xcrun", "simctl", "boot", udid)
-        command.addAll(disabledServices)
+    fun bootSimulator(udid: UDID, timeOut: Duration, logMarker: Marker) {
+        val command = listOf("/usr/bin/xcrun", "simctl", "boot", udid)
         val result = commandExecutor.exec(
             command = command,
             timeOut = timeOut,
