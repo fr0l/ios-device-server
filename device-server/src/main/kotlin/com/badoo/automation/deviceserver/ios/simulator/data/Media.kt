@@ -27,7 +27,7 @@ class Media(
             throw RuntimeException("Could not reset Media: $result")
         }
 
-        // restart assetsd to prevent fbsimctl upload failing with Error Domain=NSCocoaErrorDomain Code=-1 \"(null)\"
+        // restart assetsd to prevent media upload failing with Error Domain=NSCocoaErrorDomain Code=-1 \"(null)\"
         restartAssetsd()
 
         // starting MobileSlideshow app is essential for initializing PhotoData databases

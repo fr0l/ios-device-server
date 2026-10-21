@@ -6,7 +6,6 @@ import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.IRemote
 import com.badoo.automation.deviceserver.ios.IDevice
 import com.badoo.automation.deviceserver.ios.device.diagnostic.RealDeviceSysLog
-import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.proc.*
 import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
 import com.badoo.automation.deviceserver.ios.simulator.video.FFMPEGVideoRecorder
@@ -60,7 +59,6 @@ class Device(
     )
 
     override val calabashEndpoint = URI("http://${remote.publicHostName}:${userPorts.calabashPort}")
-    override val fbsimctlEndpoint = URI("http://${remote.publicHostName}:${userPorts.fbsimctlPort}")
     override val wdaEndpoint = URI("http://${remote.publicHostName}:${wdaProxy.localPort}")
     override val calabashPort = calabashProxy.localPort
 

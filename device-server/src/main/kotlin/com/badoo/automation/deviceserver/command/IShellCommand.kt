@@ -10,7 +10,7 @@ interface IShellCommand {
      * If you expect the command to take more than default [timeOut]
      * then specify [timeOut] for your command.
      *
-     * Example: exec("/usr/local/bin/fbsimctl", listOf("--json", "list"))
+     * Example: exec("/usr/bin/xcrun", listOf("simctl", "list"))
      *
      * May throw exceptions if command execution fails
      */

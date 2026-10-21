@@ -1,7 +1,6 @@
 package com.badoo.automation.deviceserver.ios
 
 import com.badoo.automation.deviceserver.data.*
-import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.simulator.video.VideoRecorder
 import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.InstallResult
@@ -17,7 +16,6 @@ interface IDevice {
     val mjpegServerPort: Int
     val wdaEndpoint: URI
     val calabashEndpoint: URI
-    val fbsimctlEndpoint: URI
     val udid: UDID
     val ref: DeviceRef
     val deviceState: DeviceState

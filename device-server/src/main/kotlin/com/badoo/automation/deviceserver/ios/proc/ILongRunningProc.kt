@@ -1,7 +1,7 @@
 package com.badoo.automation.deviceserver.ios.proc
 
 /**
- * Long running process. E.g. {@see FbsimctlProc}
+ * Long running process.
  */
 interface ILongRunningProc {
     val isProcessAlive: Boolean

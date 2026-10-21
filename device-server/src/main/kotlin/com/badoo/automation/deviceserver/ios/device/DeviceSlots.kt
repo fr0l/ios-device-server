@@ -40,7 +40,7 @@ class DeviceSlots(
             val devices = deviceInfoProvider.list()
 
             if (devices.isEmpty()) {
-                logger.warn("fbsimctl returned an empty list of devices on attempt $attempt/$maxAttempts")
+                logger.warn("go-ios returned an empty list of devices on attempt $attempt/$maxAttempts")
                 Thread.sleep(500)
                 continue
             } else {

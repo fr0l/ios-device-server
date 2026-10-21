@@ -3,7 +3,7 @@ package com.badoo.automation.deviceserver.simctl
 import com.badoo.automation.deviceserver.command.CommandResult
 import com.badoo.automation.deviceserver.command.IShellCommand
 import com.badoo.automation.deviceserver.data.UDID
-import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
+import com.badoo.automation.deviceserver.data.AppInfo
 import com.badoo.automation.deviceserver.simctl.models.DeviceType
 import com.badoo.automation.deviceserver.simctl.models.Simulator
 import com.badoo.automation.deviceserver.simctl.models.SimulatorRuntime

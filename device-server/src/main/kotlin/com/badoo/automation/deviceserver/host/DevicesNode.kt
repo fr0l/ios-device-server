@@ -6,7 +6,6 @@ import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.ios.device.*
-import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
 import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.WdaDeviceBundle
@@ -408,7 +407,6 @@ class DevicesNode(
         return DeviceDTO(
             ref = device.ref,
             state = device.deviceState,
-            fbsimctl_endpoint = device.fbsimctlEndpoint,
             wda_endpoint = device.wdaEndpoint,
             calabash_port = device.calabashPort,
             calabash_endpoint = device.calabashEndpoint,
