@@ -8,6 +8,7 @@ import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.host.IRemote
 import com.badoo.automation.deviceserver.util.Posix
 import com.badoo.automation.deviceserver.util.pollFor
+import com.badoo.automation.deviceserver.util.Executables
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -187,12 +188,7 @@ class FFMPEGVideoRecorder(
     }
 
     companion object {
-        private fun ffmpegBinaryPath(): String {
-            return listOf(
-                "/opt/homebrew/bin/ffmpeg", "/usr/local/bin/ffmpeg"
-            ).find { File(it).exists() } ?: throw RuntimeException("FFMPEG binary not found. Please install FFMPEG")
-        }
-
-        private val FFMPEG_PATH = ffmpegBinaryPath()
+        // Looked up on first recording, so simulators still work on hosts without ffmpeg
+        private val FFMPEG_PATH by lazy { Executables.require("ffmpeg", Executables.FFMPEG_INSTALL) }
     }
 }

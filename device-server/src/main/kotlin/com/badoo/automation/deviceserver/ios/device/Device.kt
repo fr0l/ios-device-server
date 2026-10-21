@@ -11,6 +11,7 @@ import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
 import com.badoo.automation.deviceserver.ios.simulator.video.FFMPEGVideoRecorder
 import com.badoo.automation.deviceserver.ios.simulator.video.VideoRecorder
 import com.badoo.automation.deviceserver.util.*
+import com.badoo.automation.deviceserver.util.Executables
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
@@ -224,12 +225,7 @@ class Device(
     fun crashLogs(appName: String?): List<CrashLog> {
         val crashReportsPath = Files.createTempDirectory("crashReports")
         val filter = appName?.let { "--filter \"$appName\"" } ?: ""
-        val command = "${
-            File(
-                remote.homeBrewPath,
-                "idevicecrashreport"
-            ).absolutePath
-        } --udid $udid $filter ${crashReportsPath.toAbsolutePath()}"
+        val command = "${Executables.require("idevicecrashreport", Executables.LIBIMOBILEDEVICE_INSTALL)} --udid $udid $filter ${crashReportsPath.toAbsolutePath()}"
 
         try {
             val result = remote.shell(command, returnOnFailure = true)

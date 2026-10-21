@@ -6,6 +6,7 @@ import com.badoo.automation.deviceserver.data.SysLogCaptureOptions
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.host.IRemote
 import com.badoo.automation.deviceserver.ios.ISysLog
+import com.badoo.automation.deviceserver.util.Executables
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
@@ -80,7 +81,7 @@ class RealDeviceSysLog(
         deleteLogFiles()
 
         val cmd = mutableListOf(
-            File(remote.homeBrewPath, "idevicesyslog").absolutePath,
+            Executables.require("idevicesyslog", Executables.LIBIMOBILEDEVICE_INSTALL),
             "--udid", udid,                 // target specific device by UDID
             "--no-colors",                  // disable colored output
             "--exit"                        // exit when device disconnects

@@ -4,6 +4,7 @@ import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.command.SubProcess
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.host.IRemote
+import com.badoo.automation.deviceserver.util.Executables
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -31,8 +32,8 @@ class UsbProxy(
 
     override fun toString(): String = "<iproxy $localPort $udid>"
 
-    val iproxyBinary: String = File(remote.homeBrewPath, "iproxy").absolutePath
-    val socatBinary: String = File(remote.homeBrewPath, "socat").absolutePath
+    val iproxyBinary: String = Executables.require("iproxy", Executables.IPROXY_INSTALL)
+    val socatBinary: String = Executables.require("socat", Executables.SOCAT_INSTALL)
     private var iproxy: SubProcess? = null
     private var socat: SubProcess? = null
 

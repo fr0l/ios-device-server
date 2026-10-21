@@ -9,7 +9,6 @@ import java.io.File
 import java.time.Duration
 
 interface IRemote {
-    val homeBrewPath: File
     val tmpDir: File
     val hostName: String
     val publicHostName: String
