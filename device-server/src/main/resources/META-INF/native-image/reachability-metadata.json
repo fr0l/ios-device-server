@@ -2418,6 +2418,22 @@
       "allPublicFields": true,
       "queryAllPublicConstructors": true,
       "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.host.SimulatorsNode$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.repository.SimulatorRepository$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
     }
   ],
   "resources": [

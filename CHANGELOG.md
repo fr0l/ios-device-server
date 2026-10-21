@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased — orphan simulator clones cleanup
+
+Branch `cleanSimulatorClones`. Clones survived a server restart, and a clone whose release failed stayed on disk
+(and kept its slot) until someone deleted it by hand.
+
+- On start, and then every 10 minutes, the server deletes clones that no session holds: those in the registry plus
+  any simulator named like the server's clones (`<base name> Clone <unix time>`). Base simulators are never deleted.
+  Start also runs `simctl delete unavailable`.
+- Deleting a clone also removes `/private/var/tmp/com.apple.CoreSimulator.SimDevice.<udid>`, which `simctl delete`
+  leaves behind.
+- A release whose `simctl delete` fails still frees the slot and ports; the periodic cleanup retries the delete.
+
 ## Unreleased — slim simulators (disabled launchd services)
 
 Branch `fixSimulatorDisableServices`. The server slimmed simulators down by booting them with

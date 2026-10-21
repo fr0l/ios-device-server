@@ -18,7 +18,7 @@ class LaunchdDisabledStore(private val root: Path = Path.of("/private/var/tmp"))
     fun disable(udid: UDID, labels: Collection<String>) {
         if (labels.isEmpty()) return
 
-        val dir = root.resolve("com.apple.CoreSimulator.SimDevice.$udid")
+        val dir = deviceDir(udid)
         val file = dir.resolve(FILE_NAME)
         // Entries launchd_sim wrote itself (including explicit enables) must survive the merge.
         val entries = sortedMapOf<String, Boolean>()
@@ -38,6 +38,15 @@ class LaunchdDisabledStore(private val root: Path = Path.of("/private/var/tmp"))
             Files.deleteIfExists(temp)
         }
     }
+
+    /** Removes the device's directory (plist, launchd logs, syslog socket); `simctl delete` leaves it behind. */
+    fun delete(udid: UDID) {
+        val dir = deviceDir(udid)
+        if (!Files.exists(dir)) return
+        Files.walk(dir).use { paths -> paths.sorted(Comparator.reverseOrder()).forEach(Files::deleteIfExists) }
+    }
+
+    private fun deviceDir(udid: UDID): Path = root.resolve("com.apple.CoreSimulator.SimDevice.$udid")
 
     private fun parse(input: InputStream): Map<String, Boolean> {
         val factory = XMLInputFactory.newFactory().apply {

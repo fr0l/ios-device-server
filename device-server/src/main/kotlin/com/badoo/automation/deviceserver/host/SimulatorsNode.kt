@@ -10,6 +10,7 @@ import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.PublicPortPool
 import com.badoo.automation.deviceserver.host.management.errors.OverCapacityException
 import com.badoo.automation.deviceserver.ios.simulator.ISimulator
+import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
 import com.badoo.automation.deviceserver.repository.SimulatorRepository
 import com.badoo.automation.deviceserver.simctl.models.Simulator
@@ -172,11 +173,12 @@ class SimulatorsNode(
 
         cancelPrepareSimulatorTask(deviceRef, "deleteReleaseDeviceForTests")
 
-        simulatorProvider.deleteSimulator(udid)
-
-        createdSimulators.remove(deviceRef)
-
-        allocatedPorts.remove(deviceRef)?.let { deallocatePorts(it) }
+        try {
+            simulatorProvider.deleteSimulator(udid)
+        } finally {
+            createdSimulators.remove(deviceRef)
+            allocatedPorts.remove(deviceRef)?.let { deallocatePorts(it) }
+        }
     }
 
     override fun deleteReleaseDeviceForTests(deviceRef: DeviceRef, reason: String): Boolean {
@@ -192,14 +194,16 @@ class SimulatorsNode(
 
         cancelPrepareSimulatorTask(deviceRef, "deleteReleaseDeviceForTests")
 
-        // only delete the simulator if it is not a base simulator
-        simulatorProvider.listSimulators().clonedSimulators.find { it.udid == simulator.udid }?.let {
-            simulatorProvider.deleteSimulator(simulator.udid)
+        try {
+            // only delete the simulator if it is not a base simulator
+            simulatorProvider.listSimulators().clonedSimulators.find { it.udid == simulator.udid }?.let {
+                simulatorProvider.deleteSimulator(simulator.udid)
+            }
+        } finally {
+            // A clone that failed to delete is left to the orphan clones cleanup, not kept holding a slot.
+            createdSimulators.remove(deviceRef)
+            allocatedPorts.remove(deviceRef)?.let { deallocatePorts(it) }
         }
-
-        createdSimulators.remove(deviceRef)
-
-        allocatedPorts.remove(deviceRef)?.let { deallocatePorts(it) }
 
         return true
     }
@@ -278,12 +282,37 @@ class SimulatorsNode(
         logger.info(logMarker, "Preparing node ${remote.hostName}")
         simulatorRepository.dyldSharedCacheUpdate()
         simulatorProvider.syncSimulatorsWithRegistry()
+        deleteOrphanClones()
+        simulatorRepository.deleteUnavailableSimulators()
         simulatorProvider.listSimulators()
         simulatorRepository.listRuntimes()
         simulatorRepository.listDeviceTypes()
+        orphanClonesCleaner = periodicTasksPool.scheduleWithFixedDelay(
+            { deleteOrphanClones() },
+            ORPHAN_CLONES_CLEANUP_INTERVAL.toMinutes(),
+            ORPHAN_CLONES_CLEANUP_INTERVAL.toMinutes(),
+            TimeUnit.MINUTES
+        )
+    }
+
+    private var orphanClonesCleaner: ScheduledFuture<*>? = null
+
+    private fun deleteOrphanClones() {
+        // A throwing task would silently stop the periodic cleanup.
+        try {
+            val deleted = simulatorProvider.deleteOrphanClones {
+                createSimulatorForTestsLock.withLock { createdSimulators.values.map { it.udid }.toSet() }
+            }
+            if (deleted.isNotEmpty()) {
+                logger.info(logMarker, "Deleted ${deleted.size} orphan simulator clones: $deleted")
+            }
+        } catch (e: Exception) {
+            logger.error(logMarker, "Failed to delete orphan simulator clones", e)
+        }
     }
 
     override fun dispose() {
+        orphanClonesCleaner?.cancel(false)
         logger.info(logMarker, "Finalising simulator pool for ${remote.hostName}")
         val simulatorsToDelete = createdSimulators.keys
 
@@ -581,4 +610,8 @@ class SimulatorsNode(
         return getDeviceFor(deviceRef).getEnvironmentVariable(variableName)
     }
     // endregion
+
+    private companion object {
+        private val ORPHAN_CLONES_CLEANUP_INTERVAL: Duration = Duration.ofMinutes(10)
+    }
 }

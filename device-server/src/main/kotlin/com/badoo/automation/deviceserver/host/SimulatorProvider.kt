@@ -5,14 +5,21 @@ import com.badoo.automation.deviceserver.data.SimulatorsDto
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
 import com.badoo.automation.deviceserver.repository.SimulatorRepository
+import com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore
 import com.badoo.automation.deviceserver.simctl.models.DeviceType
 import com.badoo.automation.deviceserver.simctl.models.Simulator
 import com.badoo.automation.deviceserver.simctl.models.SimulatorRuntime
+import org.slf4j.LoggerFactory
 import java.lang.RuntimeException
 
 class SimulatorProvider(
-    val remote: IRemote, private val simulatorRepository: SimulatorRepository, private val simulatorRegistry: SimulatorRegistry
+    val remote: IRemote,
+    private val simulatorRepository: SimulatorRepository,
+    private val simulatorRegistry: SimulatorRegistry,
+    private val launchdDisabledStore: LaunchdDisabledStore = LaunchdDisabledStore()
 ) {
+    private val logger = LoggerFactory.getLogger(javaClass.simpleName)
+
     fun syncSimulatorsWithRegistry() {
         val simulators = listSimulators()
         simulators.baseSimulators.forEach { baseSimulator: Simulator ->
@@ -67,6 +74,31 @@ class SimulatorProvider(
     fun deleteSimulator(udid: UDID) {
         simulatorRepository.deleteSimulator(udid)
         simulatorRegistry.removeSimulator(udid)
+        launchdDisabledStore.delete(udid)
+    }
+
+    /**
+     * Deletes clones left on disk (registered, or named like ours) that [inUse] does not hold, e.g. after a restart
+     * or a failed release. Base simulators are never touched.
+     */
+    fun deleteOrphanClones(inUse: () -> Set<UDID>): List<UDID> {
+        val registeredClones = simulatorRegistry.getClonedSimulators().map { it.udid }.toSet()
+        val baseSimulators = simulatorRegistry.getBaseSimulators().map { it.udid }.toSet()
+        val clones = simulatorRepository.listDevices().values.flatten()
+            .filter { (it.udid in registeredClones || simulatorRepository.isClone(it)) && it.udid !in baseSimulators }
+            .map { it.udid }
+        // Taken after listing, so a clone being created right now is either not listed or already in use.
+        val used = inUse()
+        return clones.filterNot { it in used }.filter { udid ->
+            try {
+                simulatorRepository.shutdownSimulator(udid)
+                deleteSimulator(udid)
+                true
+            } catch (e: Exception) {
+                logger.warn("Failed to delete orphan simulator clone $udid: $e")
+                false
+            }
+        }
     }
 
     fun listSimulators(): SimulatorsDto {
