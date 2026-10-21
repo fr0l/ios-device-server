@@ -11,9 +11,9 @@ repositories {
 }
 
 dependencies {
-  implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.3.10")
-  implementation("com.github.javaparser:javaparser-core:3.26.3")
-  implementation("com.google.code.gson:gson:2.11.0")
+  implementation("org.jetbrains.kotlin:kotlin-compiler-embeddable:2.4.21")
+  implementation("com.github.javaparser:javaparser-core:3.28.2")
+  implementation("com.google.code.gson:gson:2.14.0")
 }
 
 gradlePlugin {

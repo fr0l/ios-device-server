@@ -76,65 +76,49 @@
       "type": "com.badoo.automation.deviceserver.DeviceServerConfig",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceAllocatedPorts",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceAllocatedPorts$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.ErrorDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.UDID",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.NodeInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.NodeInfo$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.ConfiguredDevice",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.fasterxml.jackson.databind.deser.BeanDeserializerModifier[]"
@@ -831,1905 +815,1737 @@
       "type": "com.badoo.automation.deviceserver.ApplicationConfiguration",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.JsonMapper",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.LogMarkers",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.LogMarkers$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.WaitTimeoutError",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.CommandResult",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.IShellCommand",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.ShellCommand",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.ShellCommand$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.ShellCommandException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.ShellUtils",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.ShellUtils$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.SubProcess",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.command.SubProcess$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.controllers.DevicesController",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.controllers.StatusController",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.ActualCapabilities",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.AppBundleDeployDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.AppBundleDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.AppPermissionsDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.CrashLog",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DataPath",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DataPersistenceService",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DesiredCapabilities",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceDTO",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceState",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceState$CREATED",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceState$CREATING",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceState$FAILED",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceState$NONE",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceState$RESETTING",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceState$REVIVING",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.Diagnostic",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DiagnosticQuery",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DiagnosticType",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DiagnosticType$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DiagnosticType$OsLog",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.ExceptionDTO",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.FileDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.LocationDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.LocationScenarioDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.LocationWaypointsDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.MediaDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PasteboardDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionAllowed",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionAllowed$Grant",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionAllowed$Reset",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionAllowed$Revoke",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionSet",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$All",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Calendar",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Camera",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Contacts",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$ContactsLimited",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Location",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$LocationAlways",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$MediaLibrary",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Microphone",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Motion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Photos",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$PhotosAdd",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Reminders",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PermissionType$Siri",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PlistEntryDTO",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.PushNotificationDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.SharedResourceDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.SimulatorStatus",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.SimulatorStatusDTO",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.SimulatorsDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.SysLogCaptureOptions",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.UrlDto",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.DevicesNode",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.HostFactory",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.IDeviceNode",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.IRemote",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.ISimulatorFactory",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.Remote",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.Remote$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.Remote$Signal",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.Remote$Signal$SIGKILL",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.Remote$Signal$SIGTERM",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.SimulatorProvider",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.SimulatorsNode",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.ApplicationBundle",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.DeviceManager",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.PortAllocator",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.PortAllocator$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.RuntimeVersion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.XcodeVersion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.XcodeVersion$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.errors.DeviceCreationException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.errors.NoNodesRegisteredException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.errors.OverCapacityException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.ActiveDevices",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.IDevice",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.ISysLog",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.SessionEntry",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.Device",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.Device$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceInfoProvider",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceSlot",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceSlots",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceSlots$Diff",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceSlots$RemovedSlot",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.UsbProxy",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.UsbProxyFactory",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.diagnostic.RealDeviceSysLog",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.proc.ILongRunningProc",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.proc.LongRunningProc",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.proc.WebDriverAgentError",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.proc.XCTestInstrumentationAgent",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.proc.XCTestInstrumentationAgent$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simctl.dto.Device",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.ISimulator",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.LocationManager",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.Simulator",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.Simulator$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.SimulatorError",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.SimulatorPermissions",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.SimulatorProcess",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.DataContainer",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.DataContainerException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.FileSystem",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.Media",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.MediaAsset",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.MediaInconsistentcyException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.SharedContainer",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.data.SimulatorFilesystemContainer",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.diagnostic.OsLog",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.video.FFMPEGVideoRecorder",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.video.FFMPEGVideoRecorder$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.video.VideoRecorder",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.simulator.video.VideoRecordingException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.repository.SimulatorRegistry",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.repository.SimulatorRegistryData",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.repository.SimulatorRepository",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.SimCtlException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.SimCtlUtility",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.SimCtlUtility$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.DeviceType",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.Simulator",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.SimulatorPlatform",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.SimulatorPlatform$IOS",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.SimulatorPlatform$TVOS",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.SimulatorPlatform$VISIONOS",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.SimulatorPlatform$WATCHOS",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.models.SimulatorRuntime",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.AppInstaller",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.CustomHttpClient",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.CustomHttpClient$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.Deferrer",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpCodes",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpCodes$ConnectionTimedOut",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpCodes$NetworkReadTimeoutError",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpCodes$OK",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpCodes$OriginIsUnreachable",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpCodes$UnknownError",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpCodes$WebServerIsDown",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.HttpResult",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.InfoPlist",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.InstallResult",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.NetworkInterfaceInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.NetworkUtils",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.NetworkUtils$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.ProvisioningProfile",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaBundle",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaDeviceBundle",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaDeviceBundlesProvider",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaDeviceBundlesProvider$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaSimulatorBundle",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaSimulatorBundles",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaSimulatorBundlesProvider",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.WdaSimulatorBundlesProvider$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.DevicesConfig",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.SimulatorsConfig",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceType",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceType$Device",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.DeviceType$Simulator",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.HostChecker",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceCtlError",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.DeviceInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.GoIos",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.GoIos$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.XcrunDeviceCtl",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.XcrunDeviceCtl$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.AppInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.ios.device.PhysicalDeviceInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.SimCtlUtility$SimctlAppEntry",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.SimulatorPorts",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.PublicPortPool",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.PublicPortPool$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.util.TcpRelay",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.host.SimulatorsNode$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.repository.SimulatorRepository$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.SimulatorTempFiles",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.simctl.SimulatorTempFiles$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.BuildInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.CheckStatus",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.CheckStatus$DEGRADED",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.CheckStatus$FAILING",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.CheckStatus$OK",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.CheckStatus$UNKNOWN",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.CommandOutput",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.CommandRunner",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.Health",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.Health$DEGRADED",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.Health$FAILING",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.Health$OK",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HealthCheck",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HealthConfig",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HealthReport",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HealthReport$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HealthService",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HealthService$Snapshot",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HealthThresholds",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HostProbes",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.HostProbes$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.Limit",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$DefaultRoute",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$DigResult",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$DiskUsage",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$InterfaceInfo",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$LoadAverage",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$PingResult",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$SwapUsage",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$Thermal",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.MacOsParsers$VmStat",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.Probe",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.ProcessCommandRunner",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.health.PrometheusFormat",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
+      "allPublicFields": true
+    },
+    {
+      "type": "ch.qos.logback.core.FileAppender"
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.RollingFileAppender",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setFile",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setRollingPolicy",
+          "parameterTypes": [
+            "ch.qos.logback.core.rolling.RollingPolicy"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.RollingPolicy"
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.RollingPolicyBase",
+      "methods": [
+        {
+          "name": "setFileNamePattern",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        },
+        {
+          "name": "setParent",
+          "parameterTypes": [
+            "ch.qos.logback.core.FileAppender"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.SizeAndTimeBasedFileNamingAndTriggeringPolicy",
+      "methods": [
+        {
+          "name": "setMaxFileSize",
+          "parameterTypes": [
+            "ch.qos.logback.core.util.FileSize"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setMaxFileSize",
+          "parameterTypes": [
+            "ch.qos.logback.core.util.FileSize"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.TimeBasedFileNamingAndTriggeringPolicy"
+    },
+    {
+      "type": "ch.qos.logback.core.rolling.TimeBasedRollingPolicy",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setMaxHistory",
+          "parameterTypes": [
+            "int"
+          ]
+        },
+        {
+          "name": "setTimeBasedFileNamingAndTriggeringPolicy",
+          "parameterTypes": [
+            "ch.qos.logback.core.rolling.TimeBasedFileNamingAndTriggeringPolicy"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ch.qos.logback.core.util.FileSize",
+      "methods": [
+        {
+          "name": "valueOf",
+          "parameterTypes": [
+            "java.lang.String"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.ContextJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.JsonProviders",
+      "methods": [
+        {
+          "name": "addContext",
+          "parameterTypes": [
+            "net.logstash.logback.composite.ContextJsonProvider"
+          ]
+        },
+        {
+          "name": "addVersion",
+          "parameterTypes": [
+            "net.logstash.logback.composite.LogstashVersionJsonProvider"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.LogstashVersionJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.ArgumentsJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.LogLevelJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.LoggerNameJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.LoggingEventFormattedTimestampJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.LoggingEventJsonProviders",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "addArguments",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.ArgumentsJsonProvider"
+          ]
+        },
+        {
+          "name": "addLogLevel",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.LogLevelJsonProvider"
+          ]
+        },
+        {
+          "name": "addLoggerName",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.LoggerNameJsonProvider"
+          ]
+        },
+        {
+          "name": "addLogstashMarkers",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.LogstashMarkersJsonProvider"
+          ]
+        },
+        {
+          "name": "addMdc",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.MdcJsonProvider"
+          ]
+        },
+        {
+          "name": "addMessage",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.MessageJsonProvider"
+          ]
+        },
+        {
+          "name": "addStackTrace",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.StackTraceJsonProvider"
+          ]
+        },
+        {
+          "name": "addThreadName",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.LoggingEventThreadNameJsonProvider"
+          ]
+        },
+        {
+          "name": "addTimestamp",
+          "parameterTypes": [
+            "net.logstash.logback.composite.loggingevent.LoggingEventFormattedTimestampJsonProvider"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.LoggingEventThreadNameJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.LogstashMarkersJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.MdcJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.MessageJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.composite.loggingevent.StackTraceJsonProvider",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        },
+        {
+          "name": "setProviders",
+          "parameterTypes": [
+            "net.logstash.logback.composite.JsonProviders"
+          ]
+        }
+      ]
     }
   ],
   "resources": [
