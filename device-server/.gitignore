@@ -5,3 +5,5 @@ build/
 buildSrc/.gradle
 buildSrc/build/
 src/main/resources/META-INF/native-image/reachability-metadata.json.backup
+.claude
+Claude.2026-03-18.md

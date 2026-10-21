@@ -5,18 +5,19 @@ import com.badoo.automation.deviceserver.data.SimulatorsDto
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
 import com.badoo.automation.deviceserver.repository.SimulatorRepository
-import com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore
+import com.badoo.automation.deviceserver.simctl.SimulatorTempFiles
 import com.badoo.automation.deviceserver.simctl.models.DeviceType
 import com.badoo.automation.deviceserver.simctl.models.Simulator
 import com.badoo.automation.deviceserver.simctl.models.SimulatorRuntime
 import org.slf4j.LoggerFactory
+import java.io.File
 import java.lang.RuntimeException
 
 class SimulatorProvider(
     val remote: IRemote,
     private val simulatorRepository: SimulatorRepository,
     private val simulatorRegistry: SimulatorRegistry,
-    private val launchdDisabledStore: LaunchdDisabledStore = LaunchdDisabledStore()
+    private val simulatorTempFiles: SimulatorTempFiles = SimulatorTempFiles()
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
@@ -74,7 +75,12 @@ class SimulatorProvider(
     fun deleteSimulator(udid: UDID) {
         simulatorRepository.deleteSimulator(udid)
         simulatorRegistry.removeSimulator(udid)
-        launchdDisabledStore.delete(udid)
+        simulatorTempFiles.delete(udid)
+    }
+
+    /** Deletes temp files of simulators that no longer exist. */
+    fun deleteOrphanTempFiles(): List<File> = simulatorTempFiles.deleteOrphans {
+        simulatorRepository.listDevices().values.flatten().map { it.udid }.toSet()
     }
 
     /**

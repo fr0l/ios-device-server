@@ -3,6 +3,7 @@ package com.badoo.automation.deviceserver.host
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
 import com.badoo.automation.deviceserver.repository.SimulatorRepository
 import com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore
+import com.badoo.automation.deviceserver.simctl.SimulatorTempFiles
 import com.badoo.automation.deviceserver.simctl.SimCtlException
 import com.badoo.automation.deviceserver.simctl.models.Simulator
 import org.junit.Assert.assertEquals
@@ -26,7 +27,7 @@ class SimulatorProviderTest {
     val tmp = TemporaryFolder()
 
     private val base = simulator("BASE", "iPhone 17")
-    private val namedClone = simulator("NAMED", "iPhone 17 Clone 1760000000")
+    private val namedClone = simulator("11111111-2222-3333-4444-555555555555","iPhone 17 Clone 1760000000")
     private val registeredClone = simulator("REGISTERED", "Renamed by someone")
     private val busyClone = simulator("BUSY", "iPhone 17 Clone 1760000001")
     private val foreign = simulator("FOREIGN", "My iPhone")
@@ -41,8 +42,9 @@ class SimulatorProviderTest {
         registry = SimulatorRegistry(File(tmp.root, "registry.json"))
         registry.addBaseSimulator(base)
         registry.addClonedSimulator(registeredClone)
-        store = LaunchdDisabledStore(tmp.newFolder("var-tmp").toPath())
-        provider = SimulatorProvider(mock(), repository, registry, store)
+        val varTmp = tmp.newFolder("var-tmp")
+        store = LaunchdDisabledStore(varTmp.toPath())
+        provider = SimulatorProvider(mock(), repository, registry, SimulatorTempFiles(tmp.newFolder("tmp"), varTmp))
 
         val all = listOf(base, namedClone, registeredClone, busyClone, foreign)
         whenever(repository.listDevices()).doReturn(mapOf("runtime" to all))

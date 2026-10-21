@@ -39,13 +39,6 @@ class LaunchdDisabledStore(private val root: Path = Path.of("/private/var/tmp"))
         }
     }
 
-    /** Removes the device's directory (plist, launchd logs, syslog socket); `simctl delete` leaves it behind. */
-    fun delete(udid: UDID) {
-        val dir = deviceDir(udid)
-        if (!Files.exists(dir)) return
-        Files.walk(dir).use { paths -> paths.sorted(Comparator.reverseOrder()).forEach(Files::deleteIfExists) }
-    }
-
     private fun deviceDir(udid: UDID): Path = root.resolve("com.apple.CoreSimulator.SimDevice.$udid")
 
     private fun parse(input: InputStream): Map<String, Boolean> {

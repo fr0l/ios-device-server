@@ -50,17 +50,6 @@ class LaunchdDisabledStoreTest {
     }
 
     @Test
-    fun deleteRemovesDeviceDirectory() {
-        store().disable(udid, listOf("com.apple.a"))
-        Files.writeString(file().resolveSibling("launchd.log"), "log")
-
-        store().delete(udid)
-        store().delete(udid)
-
-        assertFalse(Files.exists(file().parent))
-    }
-
-    @Test
     fun reEnablesNothingAndIsIdempotent() {
         store().disable(udid, listOf("com.apple.a"))
         val first = Files.readString(file())
