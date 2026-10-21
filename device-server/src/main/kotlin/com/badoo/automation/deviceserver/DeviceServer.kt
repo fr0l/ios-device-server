@@ -109,7 +109,10 @@ fun Application.module() {
     ).apply { start() }
 
     install(DefaultHeaders)
-    install(CallLogging)
+    install(CallLogging) {
+        // Colours load jansi's native library, which the native image cannot; the logs go to files anyway
+        disableDefaultColors()
+    }
     install(ContentNegotiation) {
         jackson {
             configure(SerializationFeature.INDENT_OUTPUT, true)

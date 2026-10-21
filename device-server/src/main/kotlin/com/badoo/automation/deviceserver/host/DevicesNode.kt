@@ -151,15 +151,14 @@ class DevicesNode(
 
     private val activeRefs = ConcurrentHashMap<DeviceRef, UDID>()
 
-    private val supportedArchitectures = listOf("arm64")
-
     override fun toString(): String {
         return "<${this.javaClass.simpleName}: $remote>"
     }
 
     override fun supports(desiredCaps: DesiredCapabilities): Boolean {
         // TODO: Check support for desiredCaps.os && desiredCaps.model
-        return desiredCaps.deviceType == DeviceType.Device
+        // Without device_type any node may serve the request
+        return desiredCaps.deviceType?.let { it == DeviceType.Device } ?: true
     }
 
     override fun sendPushNotification(deviceRef: DeviceRef, bundleId: String, notificationContent: ByteArray) {

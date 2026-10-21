@@ -15,7 +15,7 @@ class DesiredCapabilitiesTest {
         val json = "{}"
         val actual = fromJson(json)
 
-        assertEquals(DesiredCapabilities(null, null, null, null, false, true), actual)
+        assertEquals(DesiredCapabilities(null, null, null, false, true), actual)
     }
 
     @Test
@@ -23,7 +23,7 @@ class DesiredCapabilitiesTest {
         val json = """{"model":"iPhone 6", "os": "iOS 11.0"}"""
         val actual = fromJson(json)
 
-        assertEquals(DesiredCapabilities(null, "iPhone 6", "iOS 11.0", null, false, true), actual)
+        assertEquals(DesiredCapabilities(null, "iPhone 6", "iOS 11.0", false, true), actual)
     }
 
     @Test
@@ -32,7 +32,7 @@ class DesiredCapabilitiesTest {
         val json = """{"udid":"$udid"}"""
         val actual = fromJson(json)
 
-        assertEquals(DesiredCapabilities(udid, null, null, null, false, true), actual)
+        assertEquals(DesiredCapabilities(udid, null, null, false, true), actual)
     }
 
     @Test
@@ -49,5 +49,13 @@ class DesiredCapabilitiesTest {
         val actual = fromJson(json)
 
         assertEquals(DesiredCapabilities(null, null, null, useWda = false), actual)
+    }
+
+    @Test
+    fun fromJsonParsesDeviceTypeAndIgnoresArchFromOlderClients() {
+        val json = """{"model":"iPhone 11", "os":"iOS 26.5", "arch":"x86_64", "headless":false, "device_type":"simulator"}"""
+        val actual = fromJson(json)
+
+        assertEquals(DesiredCapabilities(null, "iPhone 11", "iOS 26.5", deviceType = DeviceType.Simulator), actual)
     }
 }
