@@ -81,22 +81,6 @@
       "queryAllPublicMethods": true
     },
     {
-      "type": "com.badoo.automation.deviceserver.NodeConfig",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.NodeConfig$NodeType",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
       "type": "com.badoo.automation.deviceserver.data.DeviceAllocatedPorts",
       "allPublicConstructors": true,
       "allPublicMethods": true,
@@ -876,22 +860,6 @@
       "queryAllPublicMethods": true
     },
     {
-      "type": "com.badoo.automation.deviceserver.NodeConfig$NodeType$Devices",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.NodeConfig$NodeType$Simulators",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
       "type": "com.badoo.automation.deviceserver.WaitTimeoutError",
       "allPublicConstructors": true,
       "allPublicMethods": true,
@@ -949,14 +917,6 @@
     },
     {
       "type": "com.badoo.automation.deviceserver.command.ShellUtils$Companion",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.command.SshConnectionException",
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true,
@@ -1564,70 +1524,6 @@
       "queryAllPublicMethods": true
     },
     {
-      "type": "com.badoo.automation.deviceserver.host.management.IHostFactory",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.ISimulatorHostChecker",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.NodeRegistrar",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.NodeRegistrar$Companion",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.NodeRegistry",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.NodeRestarter",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.NodeWrapper",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.NodeWrapper$Companion",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
       "type": "com.badoo.automation.deviceserver.host.management.PortAllocator",
       "allPublicConstructors": true,
       "allPublicMethods": true,
@@ -1652,14 +1548,6 @@
       "queryAllPublicMethods": true
     },
     {
-      "type": "com.badoo.automation.deviceserver.host.management.SimulatorHostChecker",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
       "type": "com.badoo.automation.deviceserver.host.management.XcodeVersion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
@@ -1669,22 +1557,6 @@
     },
     {
       "type": "com.badoo.automation.deviceserver.host.management.XcodeVersion$Companion",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.ZombieReaper",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.host.management.ZombieReaper$Companion",
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true,
@@ -2477,30 +2349,6 @@
     },
     {
       "type": "com.badoo.automation.deviceserver.data.AppInfo",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.simctl.SimCtlControl",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.simctl.SimCtlControl$Companion",
-      "allPublicConstructors": true,
-      "allPublicMethods": true,
-      "allPublicFields": true,
-      "queryAllPublicConstructors": true,
-      "queryAllPublicMethods": true
-    },
-    {
-      "type": "com.badoo.automation.deviceserver.simctl.SimCtlControl$SimctlAppEntry",
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true,

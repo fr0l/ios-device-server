@@ -1,20 +1,10 @@
 {
-    "timeouts": {
-        "device": null
-    },
-    "nodes": [
-        {
-            "type": "devices",
-            "user": "",
-            "host": "localhost",
-            "whitelist_apps": [
-                "com.apple.test.WebDriverAgentRunner-Runner"
-            ],
-            "devices": [
-                {
-                    "udid": "a000aaaa000a00aaa0a00000aa000a00aaa00a00"
-                }
-            ]
-        }
+  "timeouts": { "device": 600 },
+  "devices": {
+    "whitelist_apps": ["com.apple.test.WebDriverAgentRunner-Runner"],
+    "uninstall_apps": false,
+    "configured": [
+      { "udid": "a000aaaa000a00aaa0a00000aa000a00aaa00a00" }
     ]
+  }
 }

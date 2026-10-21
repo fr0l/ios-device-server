@@ -3,9 +3,6 @@
 set -e
 set -u
 
-echo "Building fbsimctl..."
-./device-server/scripts/build_fbsimctl.sh
-
 echo "Building WebDriverAgent..."
 
 # Building WebDriverAgent for devices is skipped by default, because it requires signing patch to set developer team and bundle id.

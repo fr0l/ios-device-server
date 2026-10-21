@@ -47,6 +47,9 @@ class DeviceManager(
         hostFactory.createNodes(config).apply {
             nodes.addAll(this)
         }
+        check(nodes.isNotEmpty()) {
+            "Config enables neither \"simulators\" nor \"devices\". The legacy \"nodes\" format is no longer supported."
+        }
 
         nodes.forEach { it.prepareNode() }
 

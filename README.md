@@ -1,12 +1,12 @@
 # iOS Remote Device Server [![Build Status](https://travis-ci.org/badoo/ios-device-server.svg?branch=master)](https://travis-ci.org/badoo/ios-device-server)
 
-A server for managing, booting, and controlling simulators and devices on remote host machines.
+A server for managing, booting, and controlling simulators and physical devices on the macOS host it runs on. One server instance manages one host.
 
 ## Features
-- Enables control of simulators and devices connected to remote host machines
-- Enables tests to run using remote simulators and devices
+- Enables control of simulators and devices connected to the host
+- Enables tests to run using simulators and devices of that host
 - Enables custom actions on simulators like clearing safari cookies or fast reset of a simulator
-- Hides away satisfying desired capabilities, i.e. based on requested model or os will choose an appropriate host to create a simulator
+- Hides away satisfying desired capabilities, i.e. based on requested model or os will pick a matching simulator or device
 
 ## Requirements
 ### Java
@@ -18,7 +18,9 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 10 -F)
 
 ### Dependencies
 
-Device Server uses fbsimctl, libimobiledevice and other tools under the hood.
+Device Server uses `xcrun simctl`, `xcrun devicectl`, [go-ios](https://github.com/danielpaulus/go-ios), libimobiledevice and other tools under the hood.
+
+See [CHANGELOG.md](CHANGELOG.md) for API and configuration changes.
 
 To install dependencies run:
 
