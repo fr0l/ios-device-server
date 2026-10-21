@@ -1,4 +1,4 @@
-package com.badoo.automation.deviceserver.ios.fbsimctl
+package com.badoo.automation.deviceserver.data
 
 data class AppInfo(
     val bundleId: String,

@@ -3,7 +3,6 @@ package com.badoo.automation.deviceserver.host
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.ios.IDevice
-import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import java.io.File
 import java.net.URL
 import java.nio.file.Path

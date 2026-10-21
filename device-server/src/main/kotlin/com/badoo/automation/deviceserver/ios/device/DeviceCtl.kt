@@ -2,7 +2,7 @@ package com.badoo.automation.deviceserver.ios.device
 
 import com.badoo.automation.deviceserver.command.IShellCommand
 import com.badoo.automation.deviceserver.data.UDID
-import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
+import com.badoo.automation.deviceserver.data.AppInfo
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue

@@ -8,7 +8,6 @@ import com.badoo.automation.deviceserver.data.DeviceType
 import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.errors.OverCapacityException
-import com.badoo.automation.deviceserver.ios.fbsimctl.AppInfo
 import com.badoo.automation.deviceserver.ios.simulator.ISimulator
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
 import com.badoo.automation.deviceserver.repository.SimulatorRepository
