@@ -100,7 +100,7 @@ tasks.withType<Test>().configureEach {
 graalvmNative {
     binaries {
         named("main") {
-            imageName = "device-server"
+            imageName = "ios-device-server"
             mainClass = "com.badoo.automation.deviceserver.ProgramKt"
 
             buildArgs.addAll(
