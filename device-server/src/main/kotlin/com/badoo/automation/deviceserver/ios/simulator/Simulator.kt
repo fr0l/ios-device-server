@@ -29,6 +29,7 @@ class Simulator(
     private val remote: IRemote,
     override val deviceInfo: DeviceInfo,
     private val allocatedPorts: DeviceAllocatedPorts,
+    private val privatePorts: DeviceAllocatedPorts,
     wdaSimulatorBundles: WdaSimulatorBundles,
     private val useWda: Boolean,
     private val appConfig: ApplicationConfiguration = ApplicationConfiguration(),
@@ -45,10 +46,16 @@ class Simulator(
 
     override val ref = deviceRef
     override val udid: UDID = deviceInfo.udid
+    // Clients connect to the public ports; the relays forward to the private ones that WDA and the app listen on.
     override val wdaEndpoint = URI("http://${remote.publicHostName}:${allocatedPorts.wdaPort}/")
     override val calabashEndpoint = URI("http://${remote.publicHostName}:${allocatedPorts.calabashPort}/")
-    override val calabashPort: Int = allocatedPorts.calabashPort
+    override val calabashPort: Int = privatePorts.calabashPort
     override val mjpegServerPort: Int = allocatedPorts.mjpegServerPort
+    private val privateWdaEndpoint = URI("http://${remote.publicHostName}:${privatePorts.wdaPort}/")
+
+    private val portRelays = allocatedPorts.toList().zip(privatePorts.toList()).map { (publicPort, privatePort) ->
+        TcpRelay(publicPort, remote.publicHostName, privatePort)
+    }
     override val locationManager: LocationManager = LocationManager(remote, udid)
 
     private fun createVideoRecorder(): VideoRecorder {
@@ -57,7 +64,7 @@ class Simulator(
         return when (recorderClassName) {
             FFMPEGVideoRecorder::class.qualifiedName -> FFMPEGVideoRecorder(
                 remote,
-                mjpegServerPort,
+                privatePorts.mjpegServerPort,
                 ref,
                 udid
             )
@@ -90,8 +97,8 @@ class Simulator(
         remote,
         listOf(wdaSimulatorBundles.deviceAgentBundle, wdaSimulatorBundles.webDriverAgentBundle),
         deviceInfo,
-        wdaEndpoint,
-        mjpegServerPort,
+        privateWdaEndpoint,
+        privatePorts.mjpegServerPort,
         deviceRef,
         isRealDevice = false
     )
@@ -157,6 +164,8 @@ class Simulator(
             logger.info(logMarker, "Starting to boot and prepare $simulatorType ${this@Simulator}")
 
             deviceState = DeviceState.CREATING
+
+            portRelays.forEach { it.start() }
 
             val bootExecutor: ExecutorService = Executors.newSingleThreadExecutor()
             simulatorBootExecutor = bootExecutor
@@ -568,6 +577,7 @@ class Simulator(
             { ignoringErrors({ cancelInstallTask() }) },
             { ignoringErrors({ videoRecorder.dispose() }) },
             { ignoringErrors({ instrumentationAgent.kill() }) },
+            { portRelays.forEach { relay -> ignoringErrors({ relay.close() }) } },
         ).forEach {
             executor.submit(it)
         }
@@ -679,10 +689,12 @@ class Simulator(
     //endregion
 
     override fun endpointFor(port: Int): URL {
-        val ports = allocatedPorts.toList()
-        require(ports.contains(port)) { "Port $port is not in user ports range $ports" }
+        val publicPorts = allocatedPorts.toList()
+        val privateToPublic = privatePorts.toList().zip(publicPorts).toMap()
+        val publicPort = privateToPublic[port] ?: port
+        require(publicPorts.contains(publicPort)) { "Port $port is not in user ports range $publicPorts" }
 
-        return URI("http://${remote.publicHostName}:$port/").toURL()
+        return URI("http://${remote.publicHostName}:$publicPort/").toURL()
     }
 
     //region approveAccess

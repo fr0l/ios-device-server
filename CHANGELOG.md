@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased — client ports behind a relay
+
+Branch `portRelay` (on top of `removeFbsimctl`). Only `41800-42800` is open in the firewall, but simulator clones
+being created and deleted leaked listening ports until the old `41800-65500` range overflowed within hours.
+The device server now owns the public range itself and forwards to host-local ports.
+
+- **client** Simulators: `wda_endpoint`, `calabash_endpoint` and `mjpeg_server_port` use public ports (`41800-42800`,
+  recycled round-robin in memory, no `netstat`). WDA/DeviceAgent and the app under test listen on private ports
+  (`43000-49000`); the server relays bytes between the two. A client connecting before the target is up gets a reset.
+- **client** Simulators: `calabash_port` is now the private port the app under test must listen on
+  (what goes into `CalabashServerPort`), no longer the port clients connect to. Always connect via `calabash_endpoint`.
+  A client that rebuilds the endpoint as `host:calabash_port` (e.g. the `include?(@calabash_port.to_s)` fallback in
+  `RemoteDeviceIos#init_calabash_endpoint`) would bypass the relay and be blocked by the firewall.
+- `GET /devices/{ref}/endpoint/{port}` accepts either the public or the private port of a simulator and returns the public URL.
+- Physical devices keep their proxies (`iproxy`) but take their client-facing ports from the same public pool
+  instead of the old `41800-65500` range.
+- Relays are started when the simulator boot begins and closed on release, which returns the public ports immediately.
+
 ## Unreleased — single-host server without fbsimctl
 
 Branch `removeFbsimctl`. Entries marked **client** need a change in API consumers (e.g. `client/rb`).

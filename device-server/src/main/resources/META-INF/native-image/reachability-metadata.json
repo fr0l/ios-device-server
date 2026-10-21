@@ -2370,6 +2370,38 @@
       "allPublicFields": true,
       "queryAllPublicConstructors": true,
       "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.data.SimulatorPorts",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.host.management.PublicPortPool",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.host.management.PublicPortPool$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.util.TcpRelay",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
     }
   ],
   "resources": [

@@ -7,6 +7,7 @@ import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.data.DeviceType
 import com.badoo.automation.deviceserver.host.management.ApplicationBundle
 import com.badoo.automation.deviceserver.host.management.PortAllocator
+import com.badoo.automation.deviceserver.host.management.PublicPortPool
 import com.badoo.automation.deviceserver.host.management.errors.OverCapacityException
 import com.badoo.automation.deviceserver.ios.simulator.ISimulator
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
@@ -44,6 +45,7 @@ class SimulatorsNode(
     ),
     private val simulatorProvider: SimulatorProvider = SimulatorProvider(remote, simulatorRepository, simulatorRegistry),
     private val portAllocator: PortAllocator,
+    private val publicPortPool: PublicPortPool,
     private val simulatorFactory: ISimulatorFactory = object : ISimulatorFactory {},
     private val disabledServices: List<String> = emptyList()
 ) : IDeviceNode {
@@ -51,7 +53,7 @@ class SimulatorsNode(
     private val prepareTasks = ConcurrentHashMap<String, Future<*>>()
 
     private val createdSimulators = ConcurrentHashMap<DeviceRef, ISimulator>()
-    private val allocatedPorts = HashMap<DeviceRef, DeviceAllocatedPorts>()
+    private val allocatedPorts = ConcurrentHashMap<DeviceRef, SimulatorPorts>()
 
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
     private val logMarker = MapEntriesAppendingMarker(
@@ -122,7 +124,7 @@ class SimulatorsNode(
 
             logger.debug(simLogMarker, "Will create simulator $ref")
 
-            val ports = portAllocator.allocateDAP()
+            val ports = allocatePorts()
             allocatedPorts[ref] = ports
 
             val simulator = simulatorFactory.newSimulator(
@@ -174,9 +176,7 @@ class SimulatorsNode(
 
         createdSimulators.remove(deviceRef)
 
-        allocatedPorts[deviceRef]?.let {
-            portAllocator.deallocateDAP(it)
-        }
+        allocatedPorts.remove(deviceRef)?.let { deallocatePorts(it) }
     }
 
     override fun deleteReleaseDeviceForTests(deviceRef: DeviceRef, reason: String): Boolean {
@@ -199,11 +199,24 @@ class SimulatorsNode(
 
         createdSimulators.remove(deviceRef)
 
-        allocatedPorts[deviceRef]?.let {
-            portAllocator.deallocateDAP(it)
-        }
+        allocatedPorts.remove(deviceRef)?.let { deallocatePorts(it) }
 
         return true
+    }
+
+    private fun allocatePorts(): SimulatorPorts {
+        val public = publicPortPool.allocateDAP()
+        return try {
+            SimulatorPorts(public, portAllocator.allocateDAP())
+        } catch (e: Exception) {
+            publicPortPool.deallocateDAP(public)
+            throw e
+        }
+    }
+
+    private fun deallocatePorts(ports: SimulatorPorts) {
+        publicPortPool.deallocateDAP(ports.public)
+        portAllocator.deallocateDAP(ports.private)
     }
 
     private fun cancelPrepareSimulatorTask(deviceRef: DeviceRef, reason: String) {
