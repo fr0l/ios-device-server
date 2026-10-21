@@ -561,6 +561,9 @@
       "type": "kotlin.collections.Collection"
     },
     {
+      "type": "kotlin.collections.EmptyMap"
+    },
+    {
       "type": "kotlin.collections.EmptyList"
     },
     {
@@ -2549,6 +2552,12 @@
     },
     {
       "type": "com.badoo.automation.deviceserver.util.Posix",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.util.Executables",
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true

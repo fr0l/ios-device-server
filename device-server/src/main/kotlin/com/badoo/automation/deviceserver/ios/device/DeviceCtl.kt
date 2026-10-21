@@ -3,6 +3,7 @@ package com.badoo.automation.deviceserver.ios.device
 import com.badoo.automation.deviceserver.command.IShellCommand
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.data.AppInfo
+import com.badoo.automation.deviceserver.util.Executables
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -172,6 +173,6 @@ class GoIos(private val shellCommand: IShellCommand) {
     }
 
     companion object {
-        private const val GO_IOS = "go-ios"
+        private val GO_IOS = Executables.find("go-ios")?.absolutePath ?: "go-ios"
     }
 }

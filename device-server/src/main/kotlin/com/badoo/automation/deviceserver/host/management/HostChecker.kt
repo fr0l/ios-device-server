@@ -10,6 +10,7 @@ import com.badoo.automation.deviceserver.simctl.SimCtlUtility.Companion.SIMCTL_L
 import com.badoo.automation.deviceserver.simctl.SimCtlUtility.Companion.SIMCTL_LIST_RUNTIMES_JSON
 import com.badoo.automation.deviceserver.util.deleteRecursivelyIfExist
 import com.badoo.automation.deviceserver.util.ensureDirectoryExists
+import com.badoo.automation.deviceserver.util.Executables
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -52,12 +53,12 @@ class HostChecker(
             throw IllegalStateException("Failed to get Xcode version: ${xcodeOutput.stdErr.trim() + xcodeOutput.stdOut.trim()}")
         }
 
-        val iproxyResult = remote.execIgnoringErrors((listOf(File(remote.homeBrewPath, "iproxy").absolutePath, "--help")))
+        val iproxyResult = remote.execIgnoringErrors(listOf(Executables.require("iproxy", Executables.IPROXY_INSTALL), "--help"))
         if (!iproxyResult.isSuccess) {
             throw RuntimeException("Expecting iproxy to be installed. Exit code: ${iproxyResult.exitCode}\nStdErr: ${iproxyResult.stdErr}. StdOut: ${iproxyResult.stdOut}")
         }
 
-        val socatResult = remote.execIgnoringErrors((listOf(File(remote.homeBrewPath, "socat").absolutePath, "-V")))
+        val socatResult = remote.execIgnoringErrors(listOf(Executables.require("socat", Executables.SOCAT_INSTALL), "-V"))
         if (!socatResult.isSuccess) {
             throw RuntimeException("Expecting socat to be installed. Exit code: ${socatResult.exitCode}\nStdErr: ${socatResult.stdErr}. StdOut: ${socatResult.stdOut}")
         }
@@ -74,7 +75,7 @@ class HostChecker(
 
         try {
             logger.info(logMarker, "Will shutdown iproxy and socat")
-            remote.pkill("/usl/local/bin/iproxy", true)
+            remote.pkill("/usr/local/bin/iproxy", true)
             remote.pkill("/opt/homebrew/bin/iproxy", true)
             remote.pkill("/usr/local/bin/socat", true)
             remote.pkill("/opt/homebrew/bin/socat", true)

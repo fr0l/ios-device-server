@@ -33,8 +33,6 @@ class Remote(
 
     override fun toString(): String = "<Node:$publicHostName>"
 
-    override val homeBrewPath: File = File("/usr/local/bin")
-
     override val tmpDir: File = appConfig.tempFolder
 
     override val simCtlControl: SimCtlUtility = SimCtlUtility(commandExecutor)
