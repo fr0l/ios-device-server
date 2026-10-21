@@ -87,8 +87,10 @@ class SimulatorRepository(
         }
     }
 
+    fun isClone(simulator: Simulator): Boolean = CLONE_NAME.matches(simulator.name)
+
     fun cloneSimulator(sourceSimulator: Simulator): Simulator? {
-        val cloneName = "${sourceSimulator.name} Clone ${System.currentTimeMillis() / 1000}"
+        val cloneName = "${sourceSimulator.name}$CLONE_SUFFIX${System.currentTimeMillis() / 1000}"
         return lock.withLock {
             val udid = simCtlUtility.cloneSimulator(sourceSimulator.udid, cloneName)
             findSimulatorByUdid(udid)
@@ -101,9 +103,24 @@ class SimulatorRepository(
         }
     }
 
+    fun shutdownSimulator(udid: UDID) {
+        simCtlUtility.shutdownSimulator(udid, ignoreError = true)
+    }
+
+    fun deleteUnavailableSimulators() {
+        lock.withLock {
+            simCtlUtility.deleteUnavailableSimulators()
+        }
+    }
+
     fun listDevices() = simCtlUtility.listDevices()
 
     fun listDeviceTypes(): Set<DeviceType> = simCtlUtility.listDeviceTypes()
     fun listRuntimes(): Set<SimulatorRuntime> = simCtlUtility.listRuntimes()
     fun dyldSharedCacheUpdate() = simCtlUtility.dyldSharedCacheUpdate()
+
+    private companion object {
+        private const val CLONE_SUFFIX = " Clone "
+        private val CLONE_NAME = Regex(".+$CLONE_SUFFIX\\d+")
+    }
 }
