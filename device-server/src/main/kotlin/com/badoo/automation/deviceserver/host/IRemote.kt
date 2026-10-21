@@ -14,7 +14,6 @@ interface IRemote {
     val hostName: String
     val publicHostName: String
     val commandExecutor: IShellCommand
-    fun isReachable(): Boolean
 
     fun execIgnoringErrors(command: List<String>, env: Map<String, String> = emptyMap(), timeOutSeconds: Long = 60): CommandResult
             = exec(command, env, returnFailure = true, timeOutSeconds = timeOutSeconds)

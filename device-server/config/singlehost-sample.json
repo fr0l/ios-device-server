@@ -1,0 +1,5 @@
+{
+  "timeouts": { "device": 600 },
+  "simulators": { "limit": 10, "concurrent_boots": 2 },
+  "devices": { "whitelist_apps": [], "configured": [] }
+}

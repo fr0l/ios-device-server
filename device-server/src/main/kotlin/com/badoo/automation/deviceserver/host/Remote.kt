@@ -41,13 +41,6 @@ class Remote(
     override val deviceCtl: XcrunDeviceCtl = XcrunDeviceCtl(commandExecutor)
     override val goIos: GoIos = GoIos(commandExecutor)
 
-    override fun isReachable(): Boolean {
-        // In distributed architecture, local node is always reachable.
-        // A more sophisticated health check could verify available disk space,
-        // required tools, or system resources, but for now a simple check suffices.
-        return true
-    }
-
     override fun exec(command: List<String>, env: Map<String, String>, returnFailure: Boolean, timeOutSeconds: Long): CommandResult {
         return commandExecutor.exec(command, env, returnFailure = returnFailure, timeOut = ofSeconds(timeOutSeconds))
     }
