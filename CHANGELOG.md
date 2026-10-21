@@ -8,8 +8,10 @@ Branch `cleanSimulatorClones`. Clones survived a server restart, and a clone who
 - On start, and then every 10 minutes, the server deletes clones that no session holds: those in the registry plus
   any simulator named like the server's clones (`<base name> Clone <unix time>`). Base simulators are never deleted.
   Start also runs `simctl delete unavailable`.
-- Deleting a clone also removes `/private/var/tmp/com.apple.CoreSimulator.SimDevice.<udid>`, which `simctl delete`
-  leaves behind.
+- Deleting a clone also removes its temp files, which `simctl delete` leaves behind: `derivedData_<udid>`,
+  `xctestRunDir_<udid>`, `web_driver_agent_log_<udid>.txt`, `iOS_SysLog_<udid>[.err].log` in `$TMPDIR` and
+  `/private/var/tmp/com.apple.CoreSimulator.SimDevice.<udid>`. The same cleanup deletes these files for any
+  simulator UDID that no longer exists. Physical device UDIDs (`00008110-...`) and other files are not touched.
 - A release whose `simctl delete` fails still frees the slot and ports; the periodic cleanup retries the delete.
 
 ## Unreleased — slim simulators (disabled launchd services)

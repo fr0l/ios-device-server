@@ -306,6 +306,10 @@ class SimulatorsNode(
             if (deleted.isNotEmpty()) {
                 logger.info(logMarker, "Deleted ${deleted.size} orphan simulator clones: $deleted")
             }
+            val deletedFiles = simulatorProvider.deleteOrphanTempFiles()
+            if (deletedFiles.isNotEmpty()) {
+                logger.info(logMarker, "Deleted ${deletedFiles.size} temp files of deleted simulators")
+            }
         } catch (e: Exception) {
             logger.error(logMarker, "Failed to delete orphan simulator clones", e)
         }
