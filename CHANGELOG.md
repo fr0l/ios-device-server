@@ -17,6 +17,10 @@
   ffmpeg is looked up on the first recording, so simulators work on hosts without it.
 - The native executable is `ios-device-server` and registers `kotlin.collections.EmptyMap` for reflection, which
   `GET /status/health` needs.
+- Requests choose a simulator or a real device with `device_type`; on Apple silicon `arch` cannot tell them apart.
+  `arch` is gone from the desired capabilities and ignored when sent, like any unknown field (`headless`).
+  A request without `device_type` may go to any node; it matched no node before.
+- Request logging no longer colours its lines, which loaded jansi's native library and failed in the native image.
 - The build version no longer has a timestamp: it is `2.0-SNAPSHOT` from `gradle.properties`; CI sets the release
   with `-Pversion=...`. The jar is `build/libs/device-server-<version>.jar`.
 - GraalVM CE 25.4 (JDK 25.0.4, `graalvm-community-25.0.4.1.1` in `mise.toml`), Gradle 9.8.2, Kotlin

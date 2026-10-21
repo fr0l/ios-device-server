@@ -331,7 +331,8 @@ class SimulatorsNode(
     // region: Node capabilities & capacity operations
     override fun supports(desiredCaps: DesiredCapabilities): Boolean {
         // TODO: Check support for desiredCaps.os && desiredCaps.model
-        return desiredCaps.deviceType == DeviceType.Simulator
+        // Without device_type any node may serve the request
+        return desiredCaps.deviceType?.let { it == DeviceType.Simulator } ?: true
     }
 
     override fun capacityRemaining(desiredCaps: DesiredCapabilities): Float {
