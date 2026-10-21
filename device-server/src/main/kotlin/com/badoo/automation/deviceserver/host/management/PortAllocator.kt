@@ -10,14 +10,15 @@ import java.util.*
 
 class PortAllocator(
     private val remote: IRemote,
-    min: Int = PORT_RANGE_START,
-    max: Int = PORT_RANGE_END,
+    min: Int = PRIVATE_PORT_RANGE_START,
+    max: Int = PRIVATE_PORT_RANGE_END,
     private val portsPerAllocation: Int = DeviceAllocatedPorts.portsCount()
 ) {
     companion object {
-        // this port range seems to be free and not in conflict with zabbix, etc.
-        const val PORT_RANGE_START = 41800
-        const val PORT_RANGE_END = 65500
+        // Host-local ports of WDA/Calabash/MJPEG behind the relays, see [PublicPortPool] for client-facing ones.
+        // Kept below the macOS ephemeral range (49152+).
+        const val PRIVATE_PORT_RANGE_START = 43000
+        const val PRIVATE_PORT_RANGE_END = 49000
     }
 
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)

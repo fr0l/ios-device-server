@@ -3,6 +3,7 @@ package com.badoo.automation.deviceserver.host
 import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.DeviceServerConfig
 import com.badoo.automation.deviceserver.host.management.PortAllocator
+import com.badoo.automation.deviceserver.host.management.PublicPortPool
 import com.badoo.automation.deviceserver.util.NetworkUtils
 import com.badoo.automation.deviceserver.util.WdaDeviceBundle
 import com.badoo.automation.deviceserver.util.WdaDeviceBundlesProvider
@@ -22,8 +23,9 @@ class HostFactory(
     fun createNodes(config: DeviceServerConfig): List<IDeviceNode> {
         val publicHostName = config.publicHostName ?: NetworkUtils.getAddresses().first().ip
         val remote = remoteProvider(publicHostName, publicHostName)
-        val sharedPortAllocator = PortAllocator(remote)
-        sharedPortAllocator.refreshPortAvailability()
+        val privatePortAllocator = PortAllocator(remote)
+        privatePortAllocator.refreshPortAvailability()
+        val publicPortPool = PublicPortPool()
 
         val nodes = mutableListOf<IDeviceNode>()
 
@@ -35,7 +37,8 @@ class HostFactory(
                 simulatorLimit = sim.simulatorLimit,
                 concurrentBoots = sim.concurrentBoots,
                 wdaSimulatorBundles = getWdaSimulatorBundles(),
-                portAllocator = sharedPortAllocator,
+                portAllocator = privatePortAllocator,
+                publicPortPool = publicPortPool,
                 disabledServices = sim.disabledSimulatorServices
             )
         }
@@ -45,7 +48,7 @@ class HostFactory(
             nodes += DevicesNode(
                 remote = remote,
                 publicHostName = publicHostName,
-                portAllocator = sharedPortAllocator,
+                publicPortPool = publicPortPool,
                 configuredDevices = dev.configuredDevices,
                 whitelistedApps = dev.whitelistApps,
                 uninstallApps = dev.uninstallApps,

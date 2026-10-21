@@ -28,3 +28,9 @@ data class DeviceAllocatedPorts(
         }
     }
 }
+
+/** Client-facing [public] ports are relayed to host-local [private] ones. */
+data class SimulatorPorts(
+    val public: DeviceAllocatedPorts,
+    val private: DeviceAllocatedPorts
+)

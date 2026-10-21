@@ -7,7 +7,7 @@ import com.badoo.automation.deviceserver.data.DeviceState
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.data.osMajorVersion
 import com.badoo.automation.deviceserver.host.IRemote
-import com.badoo.automation.deviceserver.host.management.PortAllocator
+import com.badoo.automation.deviceserver.host.management.PublicPortPool
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.host.management.errors.OverCapacityException
 import com.badoo.automation.deviceserver.util.WdaDeviceBundle
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 class DeviceSlots(
     val remote: IRemote,
     private val wdaDeviceBundles: List<WdaDeviceBundle>,
-    private val portAllocator: PortAllocator,
+    private val publicPortPool: PublicPortPool,
     private val deviceInfoProvider: DeviceInfoProvider,
     private val configuredDevices: Set<ConfiguredDevice>
 ) {
@@ -156,7 +156,7 @@ class DeviceSlots(
             throw RuntimeException("Device $udid is already registered")
         }
 
-        val allocatedPorts = portAllocator.allocateDAP()
+        val allocatedPorts = publicPortPool.allocateDAP()
 
         val device = Device(
             remote = remote,
@@ -185,7 +185,7 @@ class DeviceSlots(
         val allocatedPorts = slot.device.userPorts
 
         slot.device.release("Removing slot")
-        portAllocator.deallocateDAP(allocatedPorts)
+        publicPortPool.deallocateDAP(allocatedPorts)
         activeSlots.remove(slot)
 
         removedSlots.add(RemovedSlot(slot.device.udid))

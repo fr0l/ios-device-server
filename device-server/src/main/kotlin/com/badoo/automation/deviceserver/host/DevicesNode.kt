@@ -3,7 +3,7 @@ package com.badoo.automation.deviceserver.host
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.management.ApplicationBundle
-import com.badoo.automation.deviceserver.host.management.PortAllocator
+import com.badoo.automation.deviceserver.host.management.PublicPortPool
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.ios.device.*
 import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 class DevicesNode(
     private val remote: IRemote,
     override val publicHostName: String,
-    portAllocator: PortAllocator,
+    publicPortPool: PublicPortPool,
     configuredDevices: Set<ConfiguredDevice>,
     private val whitelistedApps: Set<String>,
     private val uninstallApps: Boolean,
@@ -145,7 +145,7 @@ class DevicesNode(
     }
 
     private val deviceInfoProvider = DeviceInfoProvider(remote)
-    private val slots: DeviceSlots = DeviceSlots(remote, wdaDeviceBundles, portAllocator, deviceInfoProvider, configuredDevices)
+    private val slots: DeviceSlots = DeviceSlots(remote, wdaDeviceBundles, publicPortPool, deviceInfoProvider, configuredDevices)
 
     private var deviceRegistrar: Future<Unit>? = null
 
