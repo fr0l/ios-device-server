@@ -8,6 +8,7 @@ import com.badoo.automation.deviceserver.host.HostFactory
 import com.badoo.automation.deviceserver.host.IDeviceNode
 import com.badoo.automation.deviceserver.host.NodeInfo
 import com.badoo.automation.deviceserver.host.Remote
+import com.badoo.automation.deviceserver.host.SimulatorsNode
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesException
 import com.badoo.automation.deviceserver.ios.ActiveDevices
@@ -57,6 +58,10 @@ class DeviceManager(
     }
 
     fun isReady(): Boolean = ready
+
+    /** Simulators currently allocated to sessions, and the configured limit. */
+    fun simulatorUsage(): Pair<Int, Int> =
+        nodes.filterIsInstance<SimulatorsNode>().sumOf { it.list().size } to (config.simulators?.simulatorLimit ?: 0)
 
     fun getStatus(): Map<String, Any> {
         val aliveNodesInfo: List<Pair<String, NodeInfo>> = if (nodes.isEmpty()) {

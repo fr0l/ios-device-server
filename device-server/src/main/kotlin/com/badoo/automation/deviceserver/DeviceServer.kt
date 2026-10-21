@@ -3,6 +3,8 @@ package com.badoo.automation.deviceserver
 import com.badoo.automation.deviceserver.controllers.DevicesController
 import com.badoo.automation.deviceserver.controllers.StatusController
 import com.badoo.automation.deviceserver.data.*
+import com.badoo.automation.deviceserver.health.HealthService
+import com.badoo.automation.deviceserver.health.HostProbes
 import com.badoo.automation.deviceserver.host.HostFactory
 import com.badoo.automation.deviceserver.host.management.DeviceManager
 import com.badoo.automation.deviceserver.host.management.errors.DeviceCreationException
@@ -29,6 +31,7 @@ import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileNotFoundException
+import java.time.Duration
 import kotlin.system.exitProcess
 
 private fun jsonContent(call: ApplicationCall): JsonNode {
@@ -88,6 +91,22 @@ fun Application.module() {
     deviceManager.setup()
     val devicesController = DevicesController(deviceManager)
     val statusController = StatusController(deviceManager)
+    val hostProbes = HostProbes(
+        config = config.health,
+        volumes = mapOf(
+            "simulators" to File(appConfiguration.homeDirectory, "Library/Developer/CoreSimulator/Devices"),
+            "derived_data" to File(appConfiguration.homeDirectory, "Library/Developer/Xcode/DerivedData"),
+            "tmp" to appConfiguration.tempFolder
+        ),
+        isDeviceManagerReady = deviceManager::isReady,
+        simulatorUsage = deviceManager::simulatorUsage
+    )
+    val healthService = HealthService(
+        heavyProbes = hostProbes.heavy(),
+        cheapProbes = hostProbes.cheap(),
+        refreshInterval = Duration.ofSeconds(config.health.refreshSeconds),
+        probeTimeout = HostProbes.PROBE_TIMEOUT
+    ).apply { start() }
 
     install(DefaultHeaders)
     install(CallLogging)
@@ -133,6 +152,13 @@ fun Application.module() {
             }
             get("config") {
                 call.respond(config)
+            }
+            // Always 200: the verdict is in the body, so a failing host still reports why.
+            get("health") {
+                call.respond(healthService.report())
+            }
+            get("health/metrics") {
+                call.respondText(healthService.prometheus(), ContentType.parse("text/plain; version=0.0.4"))
             }
         }
 

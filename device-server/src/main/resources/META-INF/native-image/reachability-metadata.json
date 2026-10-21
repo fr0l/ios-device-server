@@ -2450,6 +2450,286 @@
       "allPublicFields": true,
       "queryAllPublicConstructors": true,
       "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.BuildInfo",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.CheckStatus",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.CheckStatus$DEGRADED",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.CheckStatus$FAILING",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.CheckStatus$OK",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.CheckStatus$UNKNOWN",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.CommandOutput",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.CommandRunner",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.Health",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.Health$DEGRADED",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.Health$FAILING",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.Health$OK",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HealthCheck",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HealthConfig",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HealthReport",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HealthReport$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HealthService",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HealthService$Snapshot",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HealthThresholds",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HostProbes",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HostProbes$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.Limit",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$DefaultRoute",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$DigResult",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$DiskUsage",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$InterfaceInfo",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$LoadAverage",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$PingResult",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$SwapUsage",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$Thermal",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$VmStat",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.Probe",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.ProcessCommandRunner",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.PrometheusFormat",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
     }
   ],
   "resources": [

@@ -66,6 +66,29 @@ dependencies {
     testImplementation("org.hamcrest:hamcrest-junit:2.0.0.0")
 }
 
+// Read by BuildInfo for GET /status/health; a native image has no jar manifest to carry the version.
+val generateBuildInfo by tasks.registering {
+    val outputDir = layout.buildDirectory.dir("generated/build-info")
+    val buildVersion = project.version.toString()
+    val gitCommit = providers.exec {
+        commandLine("git", "rev-parse", "--short", "HEAD")
+        isIgnoreExitValue = true
+    }.standardOutput.asText.map { it.trim() }
+    inputs.property("version", buildVersion)
+    outputs.dir(outputDir)
+    doLast {
+        val commit = gitCommit.getOrElse("").ifEmpty { "unknown" }
+        outputDir.get().file("device-server-build.properties").asFile.apply {
+            parentFile.mkdirs()
+            writeText("version=$buildVersion\ngit_commit=$commit\n")
+        }
+    }
+}
+
+sourceSets.main {
+    resources.srcDir(generateBuildInfo)
+}
+
 tasks.jar {
     manifest {
         attributes["Implementation-Version"] = project.version

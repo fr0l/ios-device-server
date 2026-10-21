@@ -1,5 +1,6 @@
 package com.badoo.automation.deviceserver
 
+import com.badoo.automation.deviceserver.health.HealthConfig
 import com.badoo.automation.deviceserver.ios.device.ConfiguredDevice
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -12,7 +13,8 @@ data class DeviceServerConfig(
     val publicHostName: String? = null,
 
     val simulators: SimulatorsConfig? = null,
-    val devices: DevicesConfig? = null
+    val devices: DevicesConfig? = null,
+    val health: HealthConfig = HealthConfig()
 )
 
 @JsonIgnoreProperties(ignoreUnknown = true)

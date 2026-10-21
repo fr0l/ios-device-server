@@ -37,6 +37,25 @@
           }
         }
       }
+    },
+    "health": {
+      "description": "GET /status/health probes. Every field is optional.",
+      "type": "object",
+      "properties": {
+        "refresh_seconds": { "type": "integer" },
+        "probe_urls": { "description": "URLs probed for DNS, TCP connect and HTTP time to first byte.", "type": "array", "items": { "type": "string" } },
+        "ntp_server": { "type": "string" },
+        "expected_subnets": { "description": "CIDRs the primary interface must be in.", "type": "array", "items": { "type": "string" } },
+        "expected_xcode_version": { "type": "string" },
+        "thresholds": {
+          "description": "Per check {\"degraded\": n, \"failing\": n}; a check without \"failing\" can only degrade the host.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": { "degraded": { "type": ["number", "null"] }, "failing": { "type": ["number", "null"] } }
+          }
+        }
+      }
     }
   }
 }
