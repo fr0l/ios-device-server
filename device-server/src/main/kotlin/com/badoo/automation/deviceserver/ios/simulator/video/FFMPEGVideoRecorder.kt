@@ -6,8 +6,8 @@ import com.badoo.automation.deviceserver.command.ShellCommand.Companion.destroyP
 import com.badoo.automation.deviceserver.data.DeviceRef
 import com.badoo.automation.deviceserver.data.UDID
 import com.badoo.automation.deviceserver.host.IRemote
+import com.badoo.automation.deviceserver.util.Posix
 import com.badoo.automation.deviceserver.util.pollFor
-import com.zaxxer.nuprocess.internal.LibC
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -124,7 +124,7 @@ class FFMPEGVideoRecorder(
     )
 
     private fun gracefullyStopFfmpeg(pid: Int): Boolean {
-        return LibC.kill(pid, SIGINT) == 0
+        return Posix.kill(pid, Posix.SIGINT) == 0
     }
 
     override fun stop() {
@@ -194,6 +194,5 @@ class FFMPEGVideoRecorder(
         }
 
         private val FFMPEG_PATH = ffmpegBinaryPath()
-        private const val SIGINT = 2 // Signal number for SIGINT
     }
 }
