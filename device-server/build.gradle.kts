@@ -53,9 +53,6 @@ dependencies {
 
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.22.4")
 
-    implementation("net.java.dev.jna:jna:5.19.1")
-    implementation("com.zaxxer:nuprocess:4.0.0")
-
     testImplementation(libs.kotlin.test.junit)
     testImplementation(libs.ktor.server.test.host)
 
@@ -91,7 +88,13 @@ sourceSets.main {
 tasks.jar {
     manifest {
         attributes["Implementation-Version"] = project.version
+        // Posix.kill calls libc through java.lang.foreign.
+        attributes["Enable-Native-Access"] = "ALL-UNNAMED"
     }
+}
+
+tasks.withType<Test>().configureEach {
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
 }
 
 graalvmNative {
@@ -103,7 +106,9 @@ graalvmNative {
             buildArgs.addAll(
                 "--verbose",
                 "--enable-monitoring=heapdump,jfr,threaddump",
+                "--enable-native-access=ALL-UNNAMED",
                 "-H:+UnlockExperimentalVMOptions",
+                "-H:+ForeignAPISupport",
                 "-H:+ReportExceptionStackTraces",
                 "-H:IncludeResources=logback.*\\.xml",
                 "-H:IncludeResources=.*\\.properties",

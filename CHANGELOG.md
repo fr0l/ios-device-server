@@ -8,10 +8,13 @@
   Prefer `SizeAndTimeBasedRollingPolicy` over the deprecated `SizeAndTimeBasedFNATP`.
 - The native image is built with `--enable-monitoring=heapdump,jfr,threaddump`, so `-XX:+HeapDumpOnOutOfMemoryError`
   and `-XX:StartFlightRecording=...` work on the executable.
+- Video recording still stops ffmpeg with SIGINT so it finalises the file, but `kill(2)` is now called through
+  `java.lang.foreign` (`util/Posix`) instead of nuprocess' internal JNA binding; `nuprocess` and `jna` are gone.
+  No process is spawned to send the signal. The jar manifest and the native image enable native access for it.
 - The build version no longer has a timestamp: it is `2.0-SNAPSHOT` from `gradle.properties`; CI sets the release
   with `-Pversion=...`. The jar is `build/libs/device-server-<version>.jar`.
 - GraalVM CE 25.4 (JDK 25.0.4, `graalvm-community-innovation-25.0.4.1.1` in `mise.toml`), Gradle 9.8.2, Kotlin
-  2.4.21, Ktor 3.6.0, logback 1.6.5, native-build-tools 1.1.16, nuprocess 4.0.0 and minor updates to the rest.
+  2.4.21, Ktor 3.6.0, logback 1.6.5, native-build-tools 1.1.16 and minor updates to the rest.
 
 ## Unreleased — host health endpoint
 

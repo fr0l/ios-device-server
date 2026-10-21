@@ -2546,6 +2546,12 @@
           ]
         }
       ]
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.util.Posix",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
     }
   ],
   "resources": [
@@ -2624,5 +2630,16 @@
     {
       "glob": "org/fusesource/jansi/jansi.properties"
     }
-  ]
+  ],
+  "foreign": {
+    "downcalls": [
+      {
+        "returnType": "jint",
+        "parameterTypes": [
+          "jint",
+          "jint"
+        ]
+      }
+    ]
+  }
 }
