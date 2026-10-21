@@ -9,6 +9,7 @@ import com.badoo.automation.deviceserver.ios.simulator.data.*
 import com.badoo.automation.deviceserver.ios.simulator.diagnostic.OsLog
 import com.badoo.automation.deviceserver.ios.simulator.video.FFMPEGVideoRecorder
 import com.badoo.automation.deviceserver.ios.simulator.video.VideoRecorder
+import com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore
 import com.badoo.automation.deviceserver.simctl.SimCtlUtility
 import com.badoo.automation.deviceserver.util.*
 import net.logstash.logback.marker.MapEntriesAppendingMarker
@@ -35,7 +36,8 @@ class Simulator(
     private val appConfig: ApplicationConfiguration = ApplicationConfiguration(),
     private val trustStorePath: String = appConfig.trustStorePath,
     private val assetsPath: String = appConfig.assetsPath,
-    private val disabledServices: List<String>
+    private val disabledServices: List<String>,
+    private val launchdDisabledStore: LaunchdDisabledStore = LaunchdDisabledStore()
 ) : ISimulator {
     private companion object {
         private const val SAFARI_BUNDLE_ID = "com.apple.mobilesafari"
@@ -313,7 +315,8 @@ class Simulator(
                 concurrentBootsSemaphore.withSemaphore("Boot operation of ${this@Simulator}", logger, logMarker) {
                     logger.info(logMarker, "Booting ${this@Simulator}")
                     val nanos = measureNanoTime {
-                        simCtlUtility.bootSimulator(udid = udid, disabledServices = disabledServices, timeOut = Duration.ofSeconds(180L), logMarker = logMarker)
+                        launchdDisabledStore.disable(udid, disabledServices)
+                        simCtlUtility.bootSimulator(udid = udid, timeOut = Duration.ofSeconds(180L), logMarker = logMarker)
 
                         Thread.sleep(1000L) // make sure enough time for initial boot before any other actions
 

@@ -2402,6 +2402,22 @@
       "allPublicFields": true,
       "queryAllPublicConstructors": true,
       "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true,
+      "queryAllPublicConstructors": true,
+      "queryAllPublicMethods": true
     }
   ],
   "resources": [
