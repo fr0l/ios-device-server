@@ -3,7 +3,7 @@ package com.badoo.automation.deviceserver.data
 import com.fasterxml.jackson.annotation.JsonValue
 import java.lang.IllegalArgumentException
 
-enum class DiagnosticType(@JsonValue val value: String) {
+enum class DiagnosticType(@get:JsonValue val value: String) {
     OsLog("os_log");
 
     companion object {
