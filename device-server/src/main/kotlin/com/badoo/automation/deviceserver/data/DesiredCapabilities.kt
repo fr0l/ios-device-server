@@ -1,5 +1,6 @@
 package com.badoo.automation.deviceserver.data
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import kotlinx.serialization.Serializable
@@ -29,6 +30,11 @@ data class DesiredCapabilities(
         val osVersion: String? get() = os?.substringAfter("iOS")?.trim()
         val osMajorVersion: Int? get() = os?.substringAfter("iOS")?.trim()?.split(".")?.first()?.toInt()
 
+        /** [deviceType], or what [udid] looks like when it is missing; a simulator otherwise. */
+        @get:JsonIgnore
+        val requestedDeviceType: DeviceType
+                get() = deviceType ?: if (udid != null && !SIMULATOR_UDID.matches(udid)) DeviceType.Device else DeviceType.Simulator
+
         override fun equals(other: Any?): Boolean {
                 if (this === other) return true
                 if (javaClass != other?.javaClass) return false
@@ -53,5 +59,10 @@ data class DesiredCapabilities(
                 result = 31 * result + isSimulatorClone.hashCode()
                 result = 31 * result + (deviceType?.hashCode() ?: 0)
                 return result
+        }
+
+        private companion object {
+                // Simulator UDIDs are UUIDs; real devices have 40 hex digits, or 8 and 16 joined by a dash
+                private val SIMULATOR_UDID = Regex("[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}")
         }
 }

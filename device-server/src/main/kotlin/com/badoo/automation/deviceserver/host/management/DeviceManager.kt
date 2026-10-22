@@ -5,6 +5,7 @@ import com.badoo.automation.deviceserver.DeviceServerConfig
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.host.HostFactory
+import com.badoo.automation.deviceserver.host.DevicesNode
 import com.badoo.automation.deviceserver.host.IDeviceNode
 import com.badoo.automation.deviceserver.host.NodeInfo
 import com.badoo.automation.deviceserver.host.Remote
@@ -69,7 +70,7 @@ class DeviceManager(
         } else {
             val executor = Executors.newFixedThreadPool(nodes.size)
             val tasks = nodes.map { node ->
-                executor.submit(Callable { Pair(node.publicHostName, node.getNodeInfo()) })
+                executor.submit(Callable { Pair(nodeLabel(node), node.getNodeInfo()) })
             }
             executor.shutdown()
             val result = tasks.map { it.get() }
@@ -84,9 +85,16 @@ class DeviceManager(
         return mapOf(
             "initialized" to ready,
             "alive_nodes" to aliveNodesInfo,
-            "all_nodes" to nodes.map { it.publicHostName }.sorted(),
+            "all_nodes" to nodes.map { nodeLabel(it) }.sorted(),
             "sessions" to listOf(activeDevices.getStatus()).toString()
         )
+    }
+
+    // Both node types can run on the same host
+    private fun nodeLabel(node: IDeviceNode): String = when (node) {
+        is SimulatorsNode -> "${node.publicHostName} (simulators)"
+        is DevicesNode -> "${node.publicHostName} (devices)"
+        else -> node.publicHostName
     }
 
     fun getTotalCapacity(desiredCaps: DesiredCapabilities): Map<String, Int> {

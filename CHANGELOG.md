@@ -19,7 +19,12 @@
   `GET /status/health` needs.
 - Requests choose a simulator or a real device with `device_type`; on Apple silicon `arch` cannot tell them apart.
   `arch` is gone from the desired capabilities and ignored when sent, like any unknown field (`headless`).
-  A request without `device_type` may go to any node; it matched no node before.
+  Without `device_type` the server goes by the UDID's shape (a UUID is a simulator), otherwise a simulator.
+- One host serves simulators and real devices together (`simulators` and `devices` in one config); `/status` labels
+  each node `<host> (simulators)` / `<host> (devices)`. iproxy, socat and go-ios are checked by the devices node:
+  without them only real devices are unavailable, and a failing device registration no longer stops startup.
+- go-ios `list --details` output (`{"deviceList": [...]}` after log lines) is parsed; the old array still works.
+- The server exits when startup fails instead of hanging without listening.
 - Request logging no longer colours its lines, which loaded jansi's native library and failed in the native image.
 - The build version no longer has a timestamp: it is `2.0-SNAPSHOT` from `gradle.properties`; CI sets the release
   with `-Pversion=...`. The jar is `build/libs/device-server-<version>.jar`.
