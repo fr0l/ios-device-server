@@ -219,8 +219,22 @@ class SimCtlUtility(
         if (!result.isSuccess) {
             throw SimCtlException("simctl listapps failed for $udid: ${result.stdErr}")
         }
-        val entries: Map<String, SimctlAppEntry> = jacksonMapper.readValue(result.stdOut)
-        return entries.values.map { it.toAppInfo() }
+        // simctl prints an old-style (OpenStep) plist, not JSON; plutil converts it
+        val plist = File.createTempFile("simctl-listapps-", ".plist")
+        try {
+            plist.writeText(result.stdOut)
+            val json = commandExecutor.exec(
+                listOf("/usr/bin/plutil", "-convert", "json", "-o", "-", plist.absolutePath),
+                timeOut = Duration.ofSeconds(30)
+            )
+            if (!json.isSuccess) {
+                throw SimCtlException("plutil failed to convert simctl listapps output for $udid: ${json.stdErr}")
+            }
+            val entries: Map<String, SimctlAppEntry> = jacksonMapper.readValue(json.stdOut)
+            return entries.values.map { it.toAppInfo() }
+        } finally {
+            plist.delete()
+        }
     }
 
     fun terminateApp(udid: UDID, bundleId: String) {
@@ -258,7 +272,7 @@ class SimCtlUtility(
         @JsonProperty("CFBundleIdentifier") val bundleId: String?,
         @JsonProperty("ApplicationType") val applicationType: String?,
         @JsonProperty("DataContainer") val dataContainer: String?,
-        @JsonProperty("BundlePath") val bundlePath: String?,
+        @JsonProperty("Path") val bundlePath: String?,
         @JsonProperty("CFBundleDisplayName") val displayName: String?,
         @JsonProperty("CFBundleName") val bundleName: String?
     ) {

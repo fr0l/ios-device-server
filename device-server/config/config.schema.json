@@ -8,6 +8,7 @@
         "device": { "type": ["integer", "null"] }
       }
     },
+    "ci": { "description": "Set by the CI deployment: base simulators must exist, and with no devices.configured every attached device is used. Off (laptops): missing base simulators are created, only configured devices are used.", "type": "boolean" },
     "public_host": {
       "description": "Host name or IP returned to clients. Defaults to the first local IP.",
       "type": "string"

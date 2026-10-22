@@ -26,6 +26,14 @@
 - go-ios is no longer used: connected devices are listed with `xcrun devicectl list devices`, which also lists this
   Mac's simulators (skipped) and paired devices that are not attached by USB (not used).
 - The server exits when startup fails instead of hanging without listening.
+- New top-level `ci` flag, set by the CI deployment. CI is strict: base simulators must exist, and an empty
+  `devices.configured` uses every attached device. Without it (laptops) a missing base simulator is created on the
+  first clone request, and only `devices.configured` devices are used, so a phone plugged in to charge is ignored.
+- Simulators use the iOS runtime of the requested version; tvOS/watchOS/visionOS runtimes have the same numbers and
+  were picked before.
+- `simctl listapps` output (an old-style plist) is converted with `plutil`; starting the instrumentation failed on it.
+- The native image includes the `.xctestrun` templates; creating a simulator failed without them.
+- No attached real device is no longer logged as a warning three times a minute.
 - Request logging no longer colours its lines, which loaded jansi's native library and failed in the native image.
 - The build version no longer has a timestamp: it is `2.0-SNAPSHOT` from `gradle.properties`; CI sets the release
   with `-Pversion=...`. The jar is `build/libs/device-server-<version>.jar`.
