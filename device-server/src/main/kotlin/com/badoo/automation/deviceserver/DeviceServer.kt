@@ -7,6 +7,7 @@ import com.badoo.automation.deviceserver.controllers.StatusController
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.health.HealthService
 import com.badoo.automation.deviceserver.health.HostProbes
+import com.badoo.automation.deviceserver.health.HostResourcesSampler
 import com.badoo.automation.deviceserver.host.HostFactory
 import com.badoo.automation.deviceserver.host.management.DeviceManager
 import com.badoo.automation.deviceserver.host.management.errors.DeviceCreationException
@@ -110,6 +111,7 @@ fun Application.module() {
         probeTimeout = HostProbes.PROBE_TIMEOUT
     ).apply { start() }
     val speedTest = SpeedTest()
+    val hostResources = HostResourcesSampler()
 
     install(DefaultHeaders)
     install(CallLogging) {
@@ -165,6 +167,10 @@ fun Application.module() {
             }
             get("health/metrics") {
                 call.respondText(healthService.prometheus(), ContentType.parse("text/plain; version=0.0.4"))
+            }
+            // Measured on every request (microseconds, no system utility), unlike the cached /status/health
+            get("resources") {
+                call.respond(hostResources.read())
             }
             speedTest(speedTest)
         }

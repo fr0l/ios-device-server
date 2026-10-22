@@ -2615,6 +2615,36 @@
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HostResources",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.HostResourcesSampler",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacHostStats",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacHostStats$CpuTicks",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacHostStats$Sample",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
     }
   ],
   "resources": [
@@ -2702,6 +2732,29 @@
           "jint",
           "jint"
         ]
+      },
+      {
+        "returnType": "jint",
+        "parameterTypes": [
+          "void*",
+          "void*",
+          "void*",
+          "void*",
+          "jlong"
+        ]
+      },
+      {
+        "returnType": "jint",
+        "parameterTypes": [
+          "jint",
+          "jint",
+          "void*",
+          "void*"
+        ]
+      },
+      {
+        "returnType": "jint",
+        "parameterTypes": []
       }
     ]
   }

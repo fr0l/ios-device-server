@@ -74,6 +74,13 @@ Branch `addObservabilityControls`. `GET /status`, `/status/config` and `/quitqui
   (`application/octet-stream`, `Cache-Control: no-store`, 64 KiB chunks; default 8 MiB, max 32 MiB, else 400);
   `POST /status/speedtest` reads the body without keeping it (max 32 MiB, else 413) and answers
   `{"bytes": N, "millis": M}`, the server-side receive time. Both run on `Dispatchers.IO`. Listed on `GET /`.
+- `GET /status/resources` (no auth, like `/status/health`), measured on every request in under 1 ms for the hub's
+  memory and CPU charts: `memory_used_percent` (free plus inactive pages count as available, as in
+  `memory_available_percent`), `memory_pressure` (`normal` | `warn` | `critical`), `swap_used_gb`, `load_1m`,
+  `load_5m`, `load_15m`, `cores`, and `cpu_user_percent` (including nice), `cpu_system_percent`, `cpu_idle_percent`
+  over the interval since the previous request. The CPU values are null on the first request and when the kernel
+  accounted no ticks since the previous one. Read in-process with `sysctlbyname` and Mach `host_statistics`
+  (`java.lang.foreign` downcalls, registered in the native-image metadata); no utility is spawned.
 - Config: new optional `health` section (`probe_urls`, `ntp_server`, `expected_subnets`, `expected_xcode_version`,
   `thresholds`), see `config/config.schema.json`. The default `probe_urls` is only `https://storage.googleapis.com/`;
   add your CI server in the host config.
