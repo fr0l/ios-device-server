@@ -102,6 +102,13 @@ data class HealthThresholds(
     @JsonProperty("disk_free_percent") val diskFreePercent: Limit = Limit(degraded = 15.0, failing = 5.0),
     @JsonProperty("disk_free_gb") val diskFreeGb: Limit = Limit(degraded = 50.0, failing = 15.0),
     @JsonProperty("heap_used_percent") val heapUsedPercent: Limit = Limit(degraded = 85.0, failing = 95.0),
+    // Resident memory of the whole process (heap, code, thread stacks), not just the heap
+    @JsonProperty("process_memory_mb") val processMemoryMb: Limit = Limit(degraded = 1024.0, failing = 2048.0),
+    // ps %cpu, a decaying average; 100 is one core fully busy
+    @JsonProperty("process_cpu_percent") val processCpuPercent: Limit = Limit(degraded = 100.0),
+    // Of the last BootStats.WINDOW simulator boots
+    @JsonProperty("simulator_boot_failures") val simulatorBootFailures: Limit = Limit(degraded = 0.0, failing = 4.0),
+    @JsonProperty("simulator_boot_seconds") val simulatorBootSeconds: Limit = Limit(degraded = 90.0),
     @JsonProperty("jvm_threads") val jvmThreads: Limit = Limit(degraded = 2000.0, failing = 5000.0),
     @JsonProperty("simctl_list_ms") val simctlListMs: Limit = Limit(degraded = 5000.0, failing = 20000.0),
     @JsonProperty("link_speed_mbit") val linkSpeedMbit: Limit = Limit(failing = 1000.0),

@@ -37,6 +37,7 @@ class HealthService(
 
     @Volatile
     private var snapshot = Snapshot(null, heavyProbes.map { unknown(it, "not measured yet") })
+    private val startedAt = clock.instant()
 
     fun start() {
         scheduler.scheduleWithFixedDelay(::refreshSafely, 0, refreshInterval.toMillis(), TimeUnit.MILLISECONDS)
@@ -67,7 +68,7 @@ class HealthService(
             } catch (e: Exception) {
                 listOf(unknown(probe, describe(e)))
             }
-        } + cached.checks
+        } + refreshAge(cached.measuredAt) + cached.checks
         val (health, reasons) = HealthReport.verdict(checks)
         return HealthReport(
             schemaVersion = HealthReport.SCHEMA_VERSION,
@@ -94,6 +95,28 @@ class HealthService(
         } catch (e: Exception) {
             logger.error("Failed to refresh health checks", e)
         }
+    }
+
+    // The background refresh only writes the snapshot; a hung probe pool or scheduler shows here as a growing age.
+    private fun refreshAge(measuredAt: Instant?): HealthCheck {
+        val age = Duration.between(measuredAt ?: startedAt, clock.instant())
+        val degraded = refreshInterval + probeTimeout
+        val failing = degraded.multipliedBy(3)
+        return HealthCheck(
+            name = "health_refresh_age_seconds",
+            group = HostProbes.PROCESS,
+            status = when {
+                age > failing -> CheckStatus.FAILING
+                age > degraded -> CheckStatus.DEGRADED
+                else -> CheckStatus.OK
+            },
+            value = age.seconds,
+            threshold = "degraded > ${degraded.seconds} s, failing > ${failing.seconds} s",
+            message = if (measuredAt == null) "no background measurement in the ${age.seconds} s since start"
+            else "background checks measured ${age.seconds} s ago",
+            critical = true,
+            unit = "s"
+        )
     }
 
     private fun unknown(probe: Probe, message: String) =

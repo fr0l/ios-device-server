@@ -2573,6 +2573,36 @@
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.BootStats",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.BootStats$Boot",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.BootStats$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.BootStats$Snapshot",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$ProcessStats",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
     }
   ],
   "resources": [
