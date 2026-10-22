@@ -9,6 +9,8 @@ import com.badoo.automation.deviceserver.ios.device.*
 import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
 import com.badoo.automation.deviceserver.util.AppInstaller
 import com.badoo.automation.deviceserver.util.WdaDeviceBundle
+import com.badoo.automation.deviceserver.util.Executables
+import com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesException
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -151,14 +153,16 @@ class DevicesNode(
 
     private val activeRefs = ConcurrentHashMap<DeviceRef, UDID>()
 
+    @Volatile
+    private var unavailableReason: String? = null
+
     override fun toString(): String {
         return "<${this.javaClass.simpleName}: $remote>"
     }
 
     override fun supports(desiredCaps: DesiredCapabilities): Boolean {
         // TODO: Check support for desiredCaps.os && desiredCaps.model
-        // Without device_type any node may serve the request
-        return desiredCaps.deviceType?.let { it == DeviceType.Device } ?: true
+        return desiredCaps.requestedDeviceType == DeviceType.Device
     }
 
     override fun sendPushNotification(deviceRef: DeviceRef, bundleId: String, notificationContent: ByteArray) {
@@ -248,6 +252,7 @@ class DevicesNode(
     }
 
     override fun createDeviceForTests(desiredCaps: DesiredCapabilities): DeviceDTO {
+        unavailableReason?.let { throw NoAliveNodesException(it) }
         lateinit var slot: DeviceSlot
 
         synchronized(this) {
@@ -262,7 +267,21 @@ class DevicesNode(
     override fun prepareNode() {
         logger.info(logMarker, "Preparing node ${remote.hostName}")
 
-        slots.registerDevices()
+        // A Mac without these tools still serves simulators; only real devices are unavailable
+        val missingTools = REQUIRED_TOOLS.filter { (name, _) -> Executables.find(name) == null }
+        if (missingTools.isNotEmpty()) {
+            unavailableReason = "Real devices are unavailable on ${remote.hostName}: " +
+                missingTools.joinToString("; ") { (name, install) -> "$name is not installed ($install)" }
+            logger.error(logMarker, unavailableReason)
+            return
+        }
+
+        try {
+            slots.registerDevices()
+        } catch (e: Exception) {
+            // The periodic registration below retries; simulators must not wait for real devices
+            logger.error(logMarker, "Failed to register devices, will retry: $e")
+        }
 
         periodicTasksPool.scheduleWithFixedDelay(
             {
@@ -449,5 +468,13 @@ class DevicesNode(
     }
     override fun hashCode(): Int {
         return publicHostName.hashCode()
+    }
+
+    private companion object {
+        private val REQUIRED_TOOLS = listOf(
+            "iproxy" to Executables.IPROXY_INSTALL,
+            "socat" to Executables.SOCAT_INSTALL,
+            "go-ios" to Executables.GO_IOS_INSTALL
+        )
     }
 }

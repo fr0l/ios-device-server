@@ -109,20 +109,28 @@ class GoIos(private val shellCommand: IShellCommand) {
 
     fun listDevices(): List<PhysicalDeviceInfo> {
         val result = shellCommand.exec(
-            listOf(GO_IOS, "list"),
+            listOf(GO_IOS, "list", "--details"),
             timeOut = Duration.ofSeconds(30),
             returnFailure = true
         )
         if (!result.isSuccess) return emptyList()
-        val nodes: List<JsonNode> = mapper.readValue(result.stdOut)
+        return parseDeviceList(result.stdOut)
+    }
+
+    /** go-ios prints `{"deviceList": [...]}`, older builds a bare array; log lines may come first. */
+    internal fun parseDeviceList(output: String): List<PhysicalDeviceInfo> {
+        val json = output.lines().map { it.trim() }.lastOrNull { it.startsWith("{\"deviceList\"") || it.startsWith("[") }
+            ?: throw DeviceCtlError("Unexpected go-ios list output: $output")
+        val root = mapper.readTree(json)
+        val nodes = if (root.isArray) root else root.path("deviceList")
         return nodes.map { node ->
-            val props = node.at("/Properties")
+            val props = node.path("Properties").takeIf { !it.isMissingNode } ?: node
             PhysicalDeviceInfo(
-                udid = node.at("/DeviceID").asText(""),
-                name = props.at("/DeviceName").asText(""),
-                model = props.at("/ProductType").asText(""),
-                osVersion = props.at("/ProductVersion").asText(""),
-                arch = props.at("/CPUArchitecture").asText(""),
+                udid = node.path("Udid").asText(null) ?: node.path("DeviceID").asText(""),
+                name = props.path("DeviceName").asText(""),
+                model = props.path("ProductType").asText(""),
+                osVersion = props.path("ProductVersion").asText(""),
+                arch = props.path("CPUArchitecture").asText(""),
                 isConnected = true
             )
         }

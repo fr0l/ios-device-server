@@ -58,4 +58,14 @@ class DesiredCapabilitiesTest {
 
         assertEquals(DesiredCapabilities(null, "iPhone 11", "iOS 26.5", deviceType = DeviceType.Simulator), actual)
     }
+
+    @Test
+    fun requestedDeviceTypeComesFromDeviceTypeThenUdidAndDefaultsToSimulator() {
+        assertEquals(DeviceType.Device, fromJson("""{"device_type":"device"}""").requestedDeviceType)
+        assertEquals(DeviceType.Simulator, fromJson("""{"udid":"00008110-001A2C3E0E8A801E","device_type":"simulator"}""").requestedDeviceType)
+        assertEquals(DeviceType.Device, fromJson("""{"udid":"00008110-001A2C3E0E8A801E"}""").requestedDeviceType)
+        assertEquals(DeviceType.Device, fromJson("""{"udid":"6009c0645780eb1ac297693cf988cde5924c2f33"}""").requestedDeviceType)
+        assertEquals(DeviceType.Simulator, fromJson("""{"udid":"CD391B89-64C6-4106-BE37-EC1956956D28"}""").requestedDeviceType)
+        assertEquals(DeviceType.Simulator, fromJson("""{"model":"iPhone 11","os":"iOS 26.5"}""").requestedDeviceType)
+    }
 }
