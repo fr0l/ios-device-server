@@ -5,7 +5,7 @@ import com.badoo.automation.deviceserver.host.IRemote
 
 class DeviceInfoProvider(private val remote: IRemote) {
     fun list(): List<DeviceInfo> {
-        return remote.goIos.listDevices().map { device ->
+        return remote.deviceCtl.listDevices().filter { it.isConnected }.map { device ->
             DeviceInfo(
                 udid = device.udid,
                 model = device.model,

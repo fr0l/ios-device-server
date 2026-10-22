@@ -2,7 +2,6 @@ package com.badoo.automation.deviceserver.host
 
 import com.badoo.automation.deviceserver.command.CommandResult
 import com.badoo.automation.deviceserver.command.IShellCommand
-import com.badoo.automation.deviceserver.ios.device.GoIos
 import com.badoo.automation.deviceserver.ios.device.XcrunDeviceCtl
 import com.badoo.automation.deviceserver.simctl.SimCtlUtility
 import java.io.File
@@ -33,7 +32,6 @@ interface IRemote {
 
     val simCtlControl: SimCtlUtility
     val deviceCtl: XcrunDeviceCtl
-    val goIos: GoIos
     fun isDirectory(path: String): Boolean
     fun rm(path: String, timeOut: Duration = Duration.ofMinutes(3))
 }
