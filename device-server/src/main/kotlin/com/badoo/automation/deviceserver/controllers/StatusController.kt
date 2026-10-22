@@ -8,7 +8,7 @@ class StatusController(private val deviceManager: DeviceManager) {
     fun welcomeMessage(route: Route?): String {
         return "<html><body>Welcome to the device server.<pre>\n" +
                 (if (route == null) "No routes set yet!?" else childHierarchy(route)) + "\n" +
-                "</pre>Minimal /status, but /quitquitquit works</body></html>\n"
+                "</pre>Minimal /status, but /quitquitquit works<pre>\n" + SpeedTest.DESCRIPTION + "\n</pre></body></html>\n"
     }
 
     fun getServerStatus(serverStartTime: Long): Map<String, Any> {

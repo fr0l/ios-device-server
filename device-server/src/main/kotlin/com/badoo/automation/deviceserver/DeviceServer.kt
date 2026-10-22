@@ -1,6 +1,8 @@
 package com.badoo.automation.deviceserver
 
 import com.badoo.automation.deviceserver.controllers.DevicesController
+import com.badoo.automation.deviceserver.controllers.SpeedTest
+import com.badoo.automation.deviceserver.controllers.speedTest
 import com.badoo.automation.deviceserver.controllers.StatusController
 import com.badoo.automation.deviceserver.data.*
 import com.badoo.automation.deviceserver.health.HealthService
@@ -107,6 +109,7 @@ fun Application.module() {
         refreshInterval = Duration.ofSeconds(config.health.refreshSeconds),
         probeTimeout = HostProbes.PROBE_TIMEOUT
     ).apply { start() }
+    val speedTest = SpeedTest()
 
     install(DefaultHeaders)
     install(CallLogging) {
@@ -163,6 +166,7 @@ fun Application.module() {
             get("health/metrics") {
                 call.respondText(healthService.prometheus(), ContentType.parse("text/plain; version=0.0.4"))
             }
+            speedTest(speedTest)
         }
 
         route("devices") {

@@ -2603,6 +2603,18 @@
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.controllers.SpeedTest",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.controllers.SpeedTest$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
     }
   ],
   "resources": [

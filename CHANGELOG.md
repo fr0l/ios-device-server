@@ -69,6 +69,11 @@ Branch `addObservabilityControls`. `GET /status`, `/status/config` and `/quitqui
   `simulator_boots_failed_total` (Prometheus can `rate()` them), `simulator_boot_failures` among the last 10 boots
   (degraded at 1, failing above 4) and `simulator_boot_seconds`, their average successful boot time.
   New thresholds: `process_memory_mb`, `process_cpu_percent`, `simulator_boot_failures`, `simulator_boot_seconds`.
+- Network speed test on the server port, for the hub, which reaches the Macs from GCP only on TCP 4567 (no auth, no
+  side effects, at most 2 at a time, else 429): `GET /status/speedtest?bytes=N` streams N random bytes
+  (`application/octet-stream`, `Cache-Control: no-store`, 64 KiB chunks; default 8 MiB, max 32 MiB, else 400);
+  `POST /status/speedtest` reads the body without keeping it (max 32 MiB, else 413) and answers
+  `{"bytes": N, "millis": M}`, the server-side receive time. Both run on `Dispatchers.IO`. Listed on `GET /`.
 - Config: new optional `health` section (`probe_urls`, `ntp_server`, `expected_subnets`, `expected_xcode_version`,
   `thresholds`), see `config/config.schema.json`. The default `probe_urls` is only `https://storage.googleapis.com/`;
   add your CI server in the host config.
