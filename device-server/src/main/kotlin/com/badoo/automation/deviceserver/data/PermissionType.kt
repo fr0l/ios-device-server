@@ -3,7 +3,7 @@ package com.badoo.automation.deviceserver.data
 import com.fasterxml.jackson.annotation.JsonValue
 
 @Suppress("unused")
-enum class PermissionType(@JsonValue val value: String) {
+enum class PermissionType(@get:JsonValue val value: String) {
     All("all"),
     Calendar("calendar"),
     Camera("camera"),
@@ -20,7 +20,7 @@ enum class PermissionType(@JsonValue val value: String) {
     Siri("siri"),
 }
 
-enum class PermissionAllowed(@JsonValue val value: String) {
+enum class PermissionAllowed(@get:JsonValue val value: String) {
     Grant("grant"),
     Revoke("revoke"),
     Reset("reset"),
