@@ -12,6 +12,13 @@ data class DeviceServerConfig(
     @JsonProperty("public_host")
     val publicHostName: String? = null,
 
+    /**
+     * Set by the CI deployment. CI hosts are strict: base simulators must be prepared, and with no `devices.configured`
+     * every attached device is used. Elsewhere (laptops) missing base simulators are created and only the configured
+     * devices are used.
+     */
+    val ci: Boolean = false,
+
     val simulators: SimulatorsConfig? = null,
     val devices: DevicesConfig? = null,
     val health: HealthConfig = HealthConfig()

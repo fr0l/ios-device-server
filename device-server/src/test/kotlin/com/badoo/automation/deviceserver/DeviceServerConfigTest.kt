@@ -96,4 +96,10 @@ class DeviceServerConfigTest {
         assertEquals(false, config.uninstallApps)
         assertEquals(emptySet<ConfiguredDevice>(), config.configuredDevices)
     }
+
+    @Test
+    fun ciIsOffUnlessTheDeploymentSaysSo() {
+        assertEquals(false, JsonMapper().fromJson<DeviceServerConfig>("{}").ci)
+        assertEquals(true, JsonMapper().fromJson<DeviceServerConfig>("""{"ci": true}""").ci)
+    }
 }

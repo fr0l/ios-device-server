@@ -39,12 +39,15 @@ class SimulatorsNode(
     private val simulatorLimit: Int,
     concurrentBoots: Int,
     private val wdaSimulatorBundles: WdaSimulatorBundles,
+    createMissingBaseSimulators: Boolean = true,
     private val concurrentBootsSemaphore: Semaphore = Semaphore(concurrentBoots, true),
     private val simulatorRepository: SimulatorRepository = SimulatorRepository(remote.commandExecutor),
     simulatorRegistry: SimulatorRegistry = SimulatorRegistry(
         registryFile = File(System.getProperty("user.home"), ".iosctl/simulator_registry_$publicHostName.json")
     ),
-    private val simulatorProvider: SimulatorProvider = SimulatorProvider(remote, simulatorRepository, simulatorRegistry),
+    private val simulatorProvider: SimulatorProvider = SimulatorProvider(
+        remote, simulatorRepository, simulatorRegistry, createMissingBaseSimulators = createMissingBaseSimulators
+    ),
     private val portAllocator: PortAllocator,
     private val publicPortPool: PublicPortPool,
     private val simulatorFactory: ISimulatorFactory = object : ISimulatorFactory {},

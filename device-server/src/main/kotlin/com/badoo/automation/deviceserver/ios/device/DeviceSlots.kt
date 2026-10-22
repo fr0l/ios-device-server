@@ -21,7 +21,9 @@ class DeviceSlots(
     private val wdaDeviceBundles: List<WdaDeviceBundle>,
     private val publicPortPool: PublicPortPool,
     private val deviceInfoProvider: DeviceInfoProvider,
-    private val configuredDevices: Set<ConfiguredDevice>
+    private val configuredDevices: Set<ConfiguredDevice>,
+    // CI hosts use every attached device; elsewhere only the configured ones, so a phone plugged in to charge is left alone
+    private val useAllConnectedDevices: Boolean
 ) {
     private val activeSlots = mutableListOf<DeviceSlot>()
     private val removedSlots = ConcurrentLinkedQueue<RemovedSlot>()
@@ -32,29 +34,10 @@ class DeviceSlots(
         )
     )
 
-    private fun getDevicesWithRetry(): Set<DeviceInfo> {
-        val maxAttempts = 3
-        val connectedDevices = mutableSetOf<DeviceInfo>()
-
-        for (attempt in 1..maxAttempts) {
-            val devices = deviceInfoProvider.list()
-
-            if (devices.isEmpty()) {
-                logger.warn("devicectl listed no connected devices on attempt $attempt/$maxAttempts")
-                Thread.sleep(500)
-                continue
-            } else {
-                connectedDevices.addAll(devices)
-                break
-            }
-        }
-
-        return connectedDevices
-    }
-
     fun registerDevices() {
-        val connectedDevices = getDevicesWithRetry()
-        val allowedConnectedDevices = if (configuredDevices.isEmpty()) {
+        // No connected device is a normal state; slots are only added or removed when the list changes
+        val connectedDevices = deviceInfoProvider.list().toSet()
+        val allowedConnectedDevices = if (configuredDevices.isEmpty() && useAllConnectedDevices) {
             connectedDevices
         } else {
             val connectedDeviceUdids = configuredDevices.map { it.udid }

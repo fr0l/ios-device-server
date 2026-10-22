@@ -1,11 +1,14 @@
 package com.badoo.automation.deviceserver.host
 
+import com.badoo.automation.deviceserver.data.DesiredCapabilities
 import com.badoo.automation.deviceserver.repository.SimulatorRegistry
 import com.badoo.automation.deviceserver.repository.SimulatorRepository
 import com.badoo.automation.deviceserver.simctl.LaunchdDisabledStore
 import com.badoo.automation.deviceserver.simctl.SimulatorTempFiles
 import com.badoo.automation.deviceserver.simctl.SimCtlException
+import com.badoo.automation.deviceserver.simctl.models.DeviceType
 import com.badoo.automation.deviceserver.simctl.models.Simulator
+import com.badoo.automation.deviceserver.simctl.models.SimulatorRuntime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Before
@@ -79,6 +82,35 @@ class SimulatorProviderTest {
         val deleted = provider.deleteOrphanClones { emptySet() }
 
         assertEquals(listOf(registeredClone.udid, busyClone.udid), deleted)
+    }
+
+    @Test
+    fun cloneCreatesTheMissingBaseSimulatorOnTheIosRuntime() {
+        val iPhone11 = DeviceType("iPhone", "/iPhone 11.simdevicetype", "com.apple.CoreSimulator.SimDeviceType.iPhone-11", "iPhone12,1", "13.0", "iPhone 11")
+        val tvOs = SimulatorRuntime("23L470", "TV", "com.apple.platform.appletvsimulator", "com.apple.CoreSimulator.SimRuntime.tvOS-26-5", "Ready", "26.5")
+        val iOs = SimulatorRuntime("23F77", "IOS", "com.apple.platform.iphonesimulator", "com.apple.CoreSimulator.SimRuntime.iOS-26-5", "Ready", "26.5")
+        val newBase = simulator("NEW-BASE", "iPhone 11").apply { runtimeIdentifier = iOs.runtimeIdentifier }
+        val clone = simulator("CLONE", "iPhone 11 Clone 1760000002")
+        whenever(repository.listDeviceTypes()).doReturn(setOf(iPhone11))
+        whenever(repository.listRuntimes()).doReturn(setOf(tvOs, iOs))
+        whenever(repository.createSimulator("iPhone 11", iPhone11, iOs)).doReturn(newBase)
+        whenever(repository.cloneSimulator(newBase)).doReturn(clone)
+
+        val created = provider.createSimulatorClone(DesiredCapabilities(null, "iPhone 11", "iOS 26.5"), emptySet())
+
+        assertEquals(clone, created)
+        assertEquals(true, registry.getBaseSimulators().any { it.udid == newBase.udid })
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun ciHostsDoNotCreateMissingBaseSimulators() {
+        val iPhone11 = DeviceType("iPhone", "/iPhone 11.simdevicetype", "com.apple.CoreSimulator.SimDeviceType.iPhone-11", "iPhone12,1", "13.0", "iPhone 11")
+        val iOs = SimulatorRuntime("23F77", "IOS", "com.apple.platform.iphonesimulator", "com.apple.CoreSimulator.SimRuntime.iOS-26-5", "Ready", "26.5")
+        whenever(repository.listDeviceTypes()).doReturn(setOf(iPhone11))
+        whenever(repository.listRuntimes()).doReturn(setOf(iOs))
+        val strict = SimulatorProvider(mock(), repository, registry, SimulatorTempFiles(tmp.newFolder("tmp-ci"), tmp.newFolder("var-tmp-ci")), createMissingBaseSimulators = false)
+
+        strict.createSimulatorClone(DesiredCapabilities(null, "iPhone 11", "iOS 26.5"), emptySet())
     }
 
     private fun simulator(udid: String, name: String) = Simulator(

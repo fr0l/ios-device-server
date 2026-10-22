@@ -37,6 +37,7 @@ class HostFactory(
                 simulatorLimit = sim.simulatorLimit,
                 concurrentBoots = sim.concurrentBoots,
                 wdaSimulatorBundles = getWdaSimulatorBundles(),
+                createMissingBaseSimulators = !config.ci,
                 portAllocator = privatePortAllocator,
                 publicPortPool = publicPortPool,
                 disabledServices = sim.disabledSimulatorServices
@@ -50,6 +51,7 @@ class HostFactory(
                 publicHostName = publicHostName,
                 publicPortPool = publicPortPool,
                 configuredDevices = dev.configuredDevices,
+                useAllConnectedDevices = config.ci,
                 whitelistedApps = dev.whitelistApps,
                 uninstallApps = dev.uninstallApps,
                 wdaDeviceBundles = getWdaDeviceBundles()

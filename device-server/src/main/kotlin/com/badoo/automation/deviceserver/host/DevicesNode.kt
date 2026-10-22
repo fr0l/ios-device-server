@@ -28,6 +28,7 @@ class DevicesNode(
     override val publicHostName: String,
     publicPortPool: PublicPortPool,
     configuredDevices: Set<ConfiguredDevice>,
+    useAllConnectedDevices: Boolean,
     private val whitelistedApps: Set<String>,
     private val uninstallApps: Boolean,
     wdaDeviceBundles: List<WdaDeviceBundle>,
@@ -147,7 +148,7 @@ class DevicesNode(
     }
 
     private val deviceInfoProvider = DeviceInfoProvider(remote)
-    private val slots: DeviceSlots = DeviceSlots(remote, wdaDeviceBundles, publicPortPool, deviceInfoProvider, configuredDevices)
+    private val slots: DeviceSlots = DeviceSlots(remote, wdaDeviceBundles, publicPortPool, deviceInfoProvider, configuredDevices, useAllConnectedDevices)
 
     private var deviceRegistrar: Future<Unit>? = null
 

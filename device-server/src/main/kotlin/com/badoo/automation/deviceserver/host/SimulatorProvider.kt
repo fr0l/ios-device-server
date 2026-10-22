@@ -8,6 +8,7 @@ import com.badoo.automation.deviceserver.repository.SimulatorRepository
 import com.badoo.automation.deviceserver.simctl.SimulatorTempFiles
 import com.badoo.automation.deviceserver.simctl.models.DeviceType
 import com.badoo.automation.deviceserver.simctl.models.Simulator
+import com.badoo.automation.deviceserver.simctl.models.SimulatorPlatform
 import com.badoo.automation.deviceserver.simctl.models.SimulatorRuntime
 import org.slf4j.LoggerFactory
 import java.io.File
@@ -17,7 +18,8 @@ class SimulatorProvider(
     val remote: IRemote,
     private val simulatorRepository: SimulatorRepository,
     private val simulatorRegistry: SimulatorRegistry,
-    private val simulatorTempFiles: SimulatorTempFiles = SimulatorTempFiles()
+    private val simulatorTempFiles: SimulatorTempFiles = SimulatorTempFiles(),
+    private val createMissingBaseSimulators: Boolean = true
 ) {
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
@@ -65,7 +67,12 @@ class SimulatorProvider(
         val deviceType: DeviceType = desiredCaps.toDeviceType(simulatorRepository)
         val runtime: SimulatorRuntime = desiredCaps.toRuntime(simulatorRepository)
         val baseSimulator: Simulator = simulatorRegistry.getBaseSimulators().find { it.deviceTypeIdentifier == deviceType.identifier && it.runtimeIdentifier == runtime.runtimeIdentifier }
-            ?: throw RuntimeException("Base simulator not found for device type: $deviceType and runtime: $runtime")
+            ?: if (createMissingBaseSimulators) {
+                // A laptop that never had this model and OS (or a new Xcode) gets its base simulator now
+                createBaseSimulator(desiredCaps).also { logger.info("Created base simulator ${it.udid} for $deviceType and $runtime") }
+            } else {
+                throw RuntimeException("Base simulator not found for device type: $deviceType and runtime: $runtime")
+            }
 
         val clone = simulatorRepository.cloneSimulator(baseSimulator) ?: throw RuntimeException("Unable to clone base simulator: $baseSimulator")
         simulatorRegistry.addClonedSimulator(clone)
@@ -141,7 +148,10 @@ private fun DesiredCapabilities.toDeviceType(simulatorRepository: SimulatorRepos
 
 private fun DesiredCapabilities.toRuntime(simulatorRepository: SimulatorRepository): SimulatorRuntime {
     osVersion?.let {
-        return simulatorRepository.listRuntimes().find { runtime -> runtime.version == it }
+        // tvOS, watchOS and visionOS runtimes have the same version numbers
+        return simulatorRepository.listRuntimes().find { runtime ->
+            runtime.version == it && runtime.platformIdentifier == SimulatorPlatform.IOS.platformIdentifier
+        }
             ?: throw RuntimeException("Unable to find runtime for desired capabilities: $this. Available runtimes: ${simulatorRepository.listRuntimes()}")
     }
 

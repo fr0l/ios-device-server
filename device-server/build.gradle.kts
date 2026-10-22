@@ -114,6 +114,7 @@ graalvmNative {
                 "-H:IncludeResources=.*\\.properties",
                 "-H:IncludeResources=.*\\.yml",
                 "-H:IncludeResources=.*\\.yaml",
+                "-H:IncludeResources=.*\\.xctestrun",
                 "-H:+AddAllCharsets",
                 "--enable-url-protocols=http,https",
                 "--initialize-at-run-time=io.netty",
