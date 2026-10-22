@@ -8,7 +8,6 @@ data class DeviceInfo (
         val udid: UDID,
         val model: String,
         val os: String,
-        val arch: String,
         val name: String
 ) {
     constructor(device: Simulator):
@@ -16,7 +15,6 @@ data class DeviceInfo (
                 udid = device.udid,
                 model = device.model ?: device.deviceTypeIdentifier,
                 os = "iOS ${device.osVersion}",
-                arch = "x86",
                 name = device.model ?: device.name
             )
 

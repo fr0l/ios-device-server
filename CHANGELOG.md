@@ -18,7 +18,8 @@
 - The native executable is `ios-device-server` and registers `kotlin.collections.EmptyMap` for reflection, which
   `GET /status/health` needs.
 - Requests choose a simulator or a real device with `device_type`; on Apple silicon `arch` cannot tell them apart.
-  `arch` is gone from the desired capabilities and ignored when sent, like any unknown field (`headless`).
+  `arch` is gone from the desired capabilities and ignored when sent, like any unknown field (`headless`), and
+  from the device `info` in responses (simulators always reported `x86`).
   Without `device_type` the server goes by the UDID's shape (a UUID is a simulator), otherwise a simulator.
 - One host serves simulators and real devices together (`simulators` and `devices` in one config); `/status` labels
   each node `<host> (simulators)` / `<host> (devices)`. iproxy and socat are checked by the devices node:

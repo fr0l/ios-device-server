@@ -10,7 +10,6 @@ class DeviceInfoProvider(private val remote: IRemote) {
                 udid = device.udid,
                 model = device.model,
                 os = "iOS ${device.osVersion}",
-                arch = device.arch,
                 name = device.name
             )
         }
