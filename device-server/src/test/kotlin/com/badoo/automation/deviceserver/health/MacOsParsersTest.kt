@@ -11,6 +11,11 @@ class MacOsParsersTest {
     }
 
     @Test
+    fun processStats() {
+        assertEquals(MacOsParsers.ProcessStats(98304, 0.3), MacOsParsers.parseProcessStats(" 98304   0.3\n"))
+    }
+
+    @Test
     fun vmStat() {
         val vm = MacOsParsers.parseVmStat(
             """

@@ -3,6 +3,7 @@ package com.badoo.automation.deviceserver.health
 /** Parsers for macOS system utility output; each throws [IllegalArgumentException] on output it does not recognise. */
 object MacOsParsers {
     data class LoadAverage(val one: Double, val five: Double, val fifteen: Double)
+    data class ProcessStats(val rssKb: Long, val cpuPercent: Double)
     data class VmStat(val pageSize: Long, val pages: Map<String, Long>) {
         fun bytes(key: String): Long = (pages[key] ?: 0L) * pageSize
     }
@@ -39,6 +40,13 @@ object MacOsParsers {
         val values = Regex("[0-9]+(?:[.,][0-9]+)?").findAll(output).map { it.value.replace(',', '.').toDouble() }.toList()
         require(values.size >= 3) { "Unexpected load average: $output" }
         return LoadAverage(values[0], values[1], values[2])
+    }
+
+    /** `ps -o rss=,%cpu= -p <pid>`; %cpu may use a decimal comma in some locales. */
+    fun parseProcessStats(output: String): ProcessStats {
+        val fields = output.trim().split(Regex("\\s+"))
+        require(fields.size == 2) { "Unexpected ps output: $output" }
+        return ProcessStats(fields[0].toLong(), fields[1].replace(',', '.').toDouble())
     }
 
     fun parseVmStat(output: String): VmStat {

@@ -63,6 +63,12 @@ Branch `addObservabilityControls`. `GET /status`, `/status/config` and `/quitqui
 - Requests take milliseconds: system utilities run in the background every `health.refresh_seconds` (20).
 - `GET /status/health/metrics`: the same values in Prometheus text format (`device_server_health`,
   `device_server_health_check_status`, `device_server_health_check_value`).
+- Fleet signals in the `process` group: `process_memory_mb` (resident memory of the whole process, unlike the heap
+  percentage) and `process_cpu_percent` from `ps` in the background; `health_refresh_age_seconds`, which degrades
+  and then fails when the background checks stop updating; `simulator_boots_succeeded_total` and
+  `simulator_boots_failed_total` (Prometheus can `rate()` them), `simulator_boot_failures` among the last 10 boots
+  (degraded at 1, failing above 4) and `simulator_boot_seconds`, their average successful boot time.
+  New thresholds: `process_memory_mb`, `process_cpu_percent`, `simulator_boot_failures`, `simulator_boot_seconds`.
 - Config: new optional `health` section (`probe_urls`, `ntp_server`, `expected_subnets`, `expected_xcode_version`,
   `thresholds`), see `config/config.schema.json`. The default `probe_urls` is only `https://storage.googleapis.com/`;
   add your CI server in the host config.

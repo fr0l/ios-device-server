@@ -4,7 +4,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
+import java.time.Clock
 import java.time.Duration
+import java.time.Instant
+import java.time.ZoneOffset
 
 class HealthServiceTest {
     private fun check(name: String, status: CheckStatus, critical: Boolean = false) =
@@ -71,13 +74,88 @@ class HealthServiceTest {
             val report = it.report()
 
             val byName = report.checks.associateBy { c -> c.name }
-            assertEquals(listOf("cheap", "works", "throws", "hangs"), report.checks.map { c -> c.name })
+            assertEquals(listOf("cheap", "health_refresh_age_seconds", "works", "throws", "hangs"), report.checks.map { c -> c.name })
             assertEquals(CheckStatus.UNKNOWN, byName.getValue("throws").status)
             assertTrue(byName.getValue("throws").message.contains("no sntp"))
             assertTrue(byName.getValue("hangs").message.contains("timed out"))
             assertEquals(Health.DEGRADED, report.health)
             assertEquals(1, report.reasons.size)
         }
+    }
+
+    @Test
+    fun refreshAgeDegradesThenFailsWhenBackgroundChecksStopUpdating() {
+        var now = Instant.parse("2026-10-22T10:00:00Z")
+        val clock = object : Clock() {
+            override fun getZone() = ZoneOffset.UTC
+            override fun withZone(zone: java.time.ZoneId?) = this
+            override fun instant() = now
+        }
+        val service = HealthService(
+            heavyProbes = listOf(Probe("works", "resources", critical = false) { listOf(check("works", CheckStatus.OK)) }),
+            cheapProbes = emptyList(),
+            refreshInterval = Duration.ofSeconds(20),
+            probeTimeout = Duration.ofSeconds(30),
+            clock = clock
+        )
+        service.use {
+            fun age() = it.report().checks.first { c -> c.name == "health_refresh_age_seconds" }
+
+            assertEquals(CheckStatus.OK, age().status)
+            it.refresh()
+            now = now.plusSeconds(49)
+            assertEquals(CheckStatus.OK, age().status)
+            now = now.plusSeconds(2)
+            assertEquals(CheckStatus.DEGRADED, age().status)
+            now = now.plusSeconds(100)
+            assertEquals(CheckStatus.FAILING, age().status)
+            assertEquals(151L, age().value)
+            assertEquals(Health.FAILING, it.report().health)
+        }
+    }
+
+    @Test
+    fun processProbesReportResidentMemoryCpuAndRecentBootFailures() {
+        val boots = BootStats().apply {
+            repeat(3) { recordSuccess(Duration.ofSeconds(30)) }
+            repeat(5) { recordFailure(Duration.ofSeconds(180)) }
+        }
+        val probes = HostProbes(
+            config = HealthConfig(probeUrls = emptyList()),
+            volumes = emptyMap(),
+            isDeviceManagerReady = { true },
+            simulatorUsage = { 1 to 5 },
+            runner = { command, _ ->
+                assertEquals(listOf("/bin/ps", "-o", "rss=,%cpu=", "-p", "4242"), command)
+                CommandOutput(0, "  1572864   12,5\n")
+            },
+            bootStats = boots,
+            pid = 4242
+        )
+
+        val resources = probes.heavy().first { it.name == "process_resources" }.run().associateBy { it.name }
+        assertEquals(CheckStatus.DEGRADED, resources.getValue("process_memory_mb").status)
+        assertEquals(1536.0, resources.getValue("process_memory_mb").value)
+        assertEquals(12.5, resources.getValue("process_cpu_percent").value)
+
+        val process = probes.cheap().first().run().associateBy { it.name }
+        assertEquals(3L, process.getValue("simulator_boots_succeeded_total").value)
+        assertEquals(5L, process.getValue("simulator_boots_failed_total").value)
+        assertEquals(CheckStatus.FAILING, process.getValue("simulator_boot_failures").status)
+        assertEquals(5, process.getValue("simulator_boot_failures").value)
+        assertEquals(30.0, process.getValue("simulator_boot_seconds").value)
+    }
+
+    @Test
+    fun bootStatsKeepsOnlyTheLastTenBootsForTheVerdict() {
+        val boots = BootStats()
+        repeat(4) { boots.recordFailure(Duration.ofSeconds(180)) }
+        repeat(10) { boots.recordSuccess(Duration.ofSeconds(20)) }
+
+        val snapshot = boots.snapshot()
+
+        assertEquals(BootStats.Snapshot(succeeded = 10, failed = 4, recentFailures = 0, recentBoots = 10, averageSeconds = 20.0), snapshot)
+        assertEquals(null, BootStats().snapshot().averageSeconds)
     }
 
     @Test

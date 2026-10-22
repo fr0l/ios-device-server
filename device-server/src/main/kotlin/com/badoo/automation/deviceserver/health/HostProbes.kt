@@ -19,7 +19,9 @@ class HostProbes(
     private val isDeviceManagerReady: () -> Boolean,
     private val simulatorUsage: () -> Pair<Int, Int>,
     private val runner: CommandRunner = ProcessCommandRunner(),
-    private val cores: Int = Runtime.getRuntime().availableProcessors()
+    private val cores: Int = Runtime.getRuntime().availableProcessors(),
+    private val bootStats: BootStats = BootStats.simulators,
+    private val pid: Long = ProcessHandle.current().pid()
 ) {
     private val limits = config.thresholds
 
@@ -30,6 +32,7 @@ class HostProbes(
     fun heavy(): List<Probe> = listOf(
         Probe("load_per_core", RESOURCES, limits.loadPerCore.critical, ::load),
         Probe("memory", RESOURCES, critical = true, run = ::memory),
+        Probe("process_resources", PROCESS, limits.processMemoryMb.critical, ::processResources),
         Probe("disk", RESOURCES, critical = true, run = ::disks),
         Probe("thermal_state", RESOURCES, critical = false, run = ::thermal),
         Probe("simctl_list_ms", PROCESS, critical = true, run = ::simctlList),
@@ -166,6 +169,39 @@ class HostProbes(
                 message = if (ready) "device manager is ready" else "device manager is still setting up",
                 critical = true
             )
+        ) + simulatorBoots()
+    }
+
+    private fun processResources(): List<HealthCheck> {
+        val stats = MacOsParsers.parseProcessStats(exec("/bin/ps", "-o", "rss=,%cpu=", "-p", pid.toString()))
+        val memoryMb = stats.rssKb / 1024.0
+        return listOf(
+            measured(
+                "process_memory_mb", PROCESS, memoryMb, " MB", limits.processMemoryMb, higherIsWorse = true,
+                message = "device server uses ${memoryMb.toLong()} MB of memory (resident)"
+            ),
+            measured(
+                "process_cpu_percent", PROCESS, stats.cpuPercent, "%", limits.processCpuPercent, higherIsWorse = true,
+                message = "device server uses ${stats.cpuPercent}% CPU, 100% being one core"
+            )
+        )
+    }
+
+    private fun simulatorBoots(): List<HealthCheck> {
+        val boots = bootStats.snapshot()
+        return listOfNotNull(
+            info("simulator_boots_succeeded_total", PROCESS, boots.succeeded, null, "${boots.succeeded} simulator boots succeeded since start"),
+            info("simulator_boots_failed_total", PROCESS, boots.failed, null, "${boots.failed} simulator boots failed since start"),
+            measured(
+                "simulator_boot_failures", PROCESS, boots.recentFailures.toDouble(), "", limits.simulatorBootFailures, higherIsWorse = true,
+                message = "${boots.recentFailures} of the last ${boots.recentBoots} simulator boots failed"
+            ).copy(value = boots.recentFailures),
+            boots.averageSeconds?.let {
+                measured(
+                    "simulator_boot_seconds", PROCESS, it, " s", limits.simulatorBootSeconds, higherIsWorse = true,
+                    message = "successful boots among the last ${boots.recentBoots} took ${round(it)} s on average"
+                )
+            }
         )
     }
 
