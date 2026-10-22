@@ -34,7 +34,7 @@ fun deviceDTOStub(ref: DeviceRef): DeviceDTO {
         0,
         URI("http://calabash/endpoint/for/testing"),
         1,
-        DeviceInfo("", "", "iOS 16.4.1", "", ""),
+        DeviceInfo("", "", "iOS 16.4.1", ""),
         Exception().toDto(),
         capabilities = null
     )

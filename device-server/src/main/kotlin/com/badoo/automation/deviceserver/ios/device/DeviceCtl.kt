@@ -18,7 +18,6 @@ data class PhysicalDeviceInfo(
     val name: String,
     val model: String,
     val osVersion: String,
-    val arch: String,
     val isConnected: Boolean
 )
 
@@ -44,7 +43,6 @@ class XcrunDeviceCtl(private val shellCommand: IShellCommand) {
                     name = props.at("/name").asText(""),
                     model = hardware.at("/productType").asText(""),
                     osVersion = props.at("/osVersionNumber").asText(""),
-                    arch = hardware.at("/cpuType/name").asText(""),
                     // iproxy forwards ports over USB only
                     isConnected = node.at("/connectionProperties/transportType").asText() == "wired"
                 )
