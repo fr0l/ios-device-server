@@ -10,7 +10,6 @@ object Executables {
     const val SOCAT_INSTALL = "brew install socat"
     const val LIBIMOBILEDEVICE_INSTALL = "brew install libimobiledevice"
     const val FFMPEG_INSTALL = "brew install ffmpeg"
-    const val GO_IOS_INSTALL = "npm install -g go-ios"
 
     fun find(name: String, path: String? = System.getenv("PATH"), fallbackDirs: List<String> = HOMEBREW_BIN_DIRS): File? =
         (path.orEmpty().split(File.pathSeparator) + fallbackDirs)

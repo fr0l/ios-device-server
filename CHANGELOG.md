@@ -21,9 +21,10 @@
   `arch` is gone from the desired capabilities and ignored when sent, like any unknown field (`headless`).
   Without `device_type` the server goes by the UDID's shape (a UUID is a simulator), otherwise a simulator.
 - One host serves simulators and real devices together (`simulators` and `devices` in one config); `/status` labels
-  each node `<host> (simulators)` / `<host> (devices)`. iproxy, socat and go-ios are checked by the devices node:
+  each node `<host> (simulators)` / `<host> (devices)`. iproxy and socat are checked by the devices node:
   without them only real devices are unavailable, and a failing device registration no longer stops startup.
-- go-ios `list --details` output (`{"deviceList": [...]}` after log lines) is parsed; the old array still works.
+- go-ios is no longer used: connected devices are listed with `xcrun devicectl list devices`, which also lists this
+  Mac's simulators (skipped) and paired devices that are not attached by USB (not used).
 - The server exits when startup fails instead of hanging without listening.
 - Request logging no longer colours its lines, which loaded jansi's native library and failed in the native image.
 - The build version no longer has a timestamp: it is `2.0-SNAPSHOT` from `gradle.properties`; CI sets the release

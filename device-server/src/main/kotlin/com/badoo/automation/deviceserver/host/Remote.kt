@@ -3,7 +3,6 @@ package com.badoo.automation.deviceserver.host
 import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.command.*
-import com.badoo.automation.deviceserver.ios.device.GoIos
 import com.badoo.automation.deviceserver.ios.device.XcrunDeviceCtl
 import com.badoo.automation.deviceserver.simctl.SimCtlUtility
 import com.badoo.automation.deviceserver.util.ensure
@@ -37,7 +36,6 @@ class Remote(
 
     override val simCtlControl: SimCtlUtility = SimCtlUtility(commandExecutor)
     override val deviceCtl: XcrunDeviceCtl = XcrunDeviceCtl(commandExecutor)
-    override val goIos: GoIos = GoIos(commandExecutor)
 
     override fun exec(command: List<String>, env: Map<String, String>, returnFailure: Boolean, timeOutSeconds: Long): CommandResult {
         return commandExecutor.exec(command, env, returnFailure = returnFailure, timeOut = ofSeconds(timeOutSeconds))
