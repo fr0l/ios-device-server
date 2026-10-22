@@ -6,8 +6,13 @@
   `RollingFileAppender`, `SizeAndTimeBasedRollingPolicy`, `TimeBasedRollingPolicy` and the
   `LoggingEventCompositeJsonEncoder` providers. Before, such a logback config logged nothing in the native image.
   Prefer `SizeAndTimeBasedRollingPolicy` over the deprecated `SizeAndTimeBasedFNATP`.
-- The native image is built with `--enable-monitoring=heapdump,jfr,threaddump`, so `-XX:+HeapDumpOnOutOfMemoryError`
-  and `-XX:StartFlightRecording=...` work on the executable.
+- Heap dumps, JFR and thread dumps are built in only with `-PnativeDebug` (`--enable-monitoring=heapdump,jfr,threaddump`);
+  they made the executable 6.4 MB larger. A default build exits on `-XX:+HeapDumpOnOutOfMemoryError` or
+  `-XX:StartFlightRecording=...` ("Could not find option"), so launch scripts must not pass them.
+  `-PnativeImageArgs="..."` appends native-image options.
+- The native image is optimised for size (`-Os`) and drops `AddAllCharsets`, which okhttp's `native-image.properties`
+  turned on: 57 MB instead of 78 MB (22 MB gzipped). Startup (about 1.6 s), memory and HTTP throughput stay within
+  run-to-run noise of the previous build.
 - Video recording still stops ffmpeg with SIGINT so it finalises the file, but `kill(2)` is now called through
   `java.lang.foreign` (`util/Posix`) instead of nuprocess' internal JNA binding; `nuprocess` and `jna` are gone.
   No process is spawned to send the signal. The jar manifest and the native image enable native access for it.

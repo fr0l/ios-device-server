@@ -97,15 +97,26 @@ tasks.withType<Test>().configureEach {
     jvmArgs("--enable-native-access=ALL-UNNAMED")
 }
 
+// JFR, heap and thread dumps make the binary larger; -PnativeDebug builds them in.
+val nativeDebug = providers.gradleProperty("nativeDebug").map { it != "false" }.getOrElse(false)
+// Extra native-image options, appended last so they win, e.g. -PnativeImageArgs="-Os".
+val nativeImageArgs = providers.gradleProperty("nativeImageArgs")
+    .map { args -> args.split(" ").filter { it.isNotBlank() } }
+    .getOrElse(emptyList())
+
 graalvmNative {
     binaries {
         named("main") {
             imageName = "ios-device-server"
             mainClass = "com.badoo.automation.deviceserver.ProgramKt"
 
+            if (nativeDebug) {
+                buildArgs.add("--enable-monitoring=heapdump,jfr,threaddump")
+            }
             buildArgs.addAll(
                 "--verbose",
-                "--enable-monitoring=heapdump,jfr,threaddump",
+                // 13% smaller than the default -O2 with no measurable slowdown: the server mostly waits on simctl
+                "-Os",
                 "--enable-native-access=ALL-UNNAMED",
                 "-H:+UnlockExperimentalVMOptions",
                 "-H:+ForeignAPISupport",
@@ -115,13 +126,16 @@ graalvmNative {
                 "-H:IncludeResources=.*\\.yml",
                 "-H:IncludeResources=.*\\.yaml",
                 "-H:IncludeResources=.*\\.xctestrun",
-                "-H:+AddAllCharsets",
+                // okhttp's native-image.properties turns AddAllCharsets on; the server only needs UTF-8 and the
+                // standard charsets, and they save 5.5 MB
+                "-H:-AddAllCharsets",
                 "--enable-url-protocols=http,https",
                 "--initialize-at-run-time=io.netty",
                 "--initialize-at-run-time=io.ktor.network.selector.InterestSuspensionsMap",
                 "--initialize-at-run-time=io.ktor.network.selector.SelectableBase",
                 "-H:+ReportUnsupportedElementsAtRuntime"
             )
+            buildArgs.addAll(nativeImageArgs)
         }
     }
 }
