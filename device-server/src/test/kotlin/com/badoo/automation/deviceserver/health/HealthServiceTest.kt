@@ -162,15 +162,24 @@ class HealthServiceTest {
             volumes = emptyMap(),
             isDeviceManagerReady = { true },
             simulatorUsage = { 4 to 10 },
-            runner = { _, _ -> CommandOutput(0, "11 /x/CoreSimulator/Devices/a/data/app\n12 /x/RuntimeRoot/usr/libexec/d\n13 /usr/bin/other\n14 /x/RuntimeRoot/gone\n") },
+            runner = { _, _ ->
+                val sim = "/bin/launchd_sim /Users/qa/Library/Developer/CoreSimulator/Devices"
+                CommandOutput(
+                    0,
+                    "11 1 $sim/9A5DBEC2-9234-4EB9-9434-72C5DF7DEA0B/data/var/run/launchd_bootstrap.plist\n12 11 /usr/libexec/d\n" +
+                        "21 1 $sim/4BCC071E-9613-4129-A40F-E5381EDBDB8E/data/var/run/launchd_bootstrap.plist\n22 21 gone\n13 1 /usr/bin/other\n"
+                )
+            },
             cpuSampler = cpuSampler,
-            physicalFootprint = { pid -> mapOf(11 to (1L shl 30), 12 to (3L shl 30), 13 to (9L shl 30))[pid] }
+            physicalFootprint = { pid -> mapOf(11 to (1L shl 30), 12 to (3L shl 30), 21 to (2L shl 30), 13 to (9L shl 30))[pid] }
         )
         val heavy = probes.heavy().associateBy { it.name }
 
         val memory = heavy.getValue("simulators_memory").run().associateBy { it.name }
-        assertEquals(4.0, memory.getValue("simulators_memory_gb").value)
-        assertEquals(1.0, memory.getValue("simulator_memory_gb_each").value)
+        assertEquals(6.0, memory.getValue("simulators_memory_gb").value)
+        assertEquals(3.0, memory.getValue("simulator_memory_gb_each").value)
+        assertEquals(4.0, memory.getValue("simulator_memory_gb_max").value)
+        assertEquals("9A5DBEC2-9234-4EB9-9434-72C5DF7DEA0B", memory.getValue("simulator_memory_gb_max").details["udid"])
 
         assertEquals(CheckStatus.UNKNOWN, heavy.getValue("host_cpu").run().single().status)
         // 60 user, 20 system, 120 idle of 200 ticks

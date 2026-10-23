@@ -49,15 +49,34 @@ object MacOsParsers {
         return ProcessStats(fields[0].toLong(), fields[1].replace(',', '.').toDouble())
     }
 
+    private val launchdSimDevice = Regex("launchd_sim .*/CoreSimulator/Devices/([0-9A-Fa-f-]{36})/")
+
     /**
-     * `ps -axo pid=,command=`: processes running inside simulators, i.e. launchd_sim and everything it starts from the
-     * runtime (`RuntimeRoot/`) or a simulator's data (`CoreSimulator/Devices/`, apps and DeviceAgent).
+     * `ps -axo pid=,ppid=,command=`: the processes of each booted simulator by UDID, i.e. its launchd_sim and all
+     * descendants. Following the tree catches daemons whose command line does not name the runtime, and leaves out
+     * host processes that only mention a simulator path in their arguments.
      */
-    fun parseSimulatorPids(output: String): List<Int> = output.lineSequence()
-        .map { it.trim() }
-        .filter { "/CoreSimulator/Devices/" in it || "/RuntimeRoot/" in it }
-        .mapNotNull { it.substringBefore(' ').toIntOrNull() }
-        .toList()
+    fun parseSimulatorProcesses(output: String): Map<String, List<Int>> {
+        val processes = output.lineSequence().mapNotNull { line ->
+            val fields = line.trim().split(Regex("\\s+"), limit = 3)
+            val pid = fields.getOrNull(0)?.toIntOrNull()
+            val ppid = fields.getOrNull(1)?.toIntOrNull()
+            if (pid == null || ppid == null) null else Triple(pid, ppid, fields.getOrElse(2) { "" })
+        }.toList()
+        val children = processes.groupBy({ it.second }, { it.first })
+        return processes.mapNotNull { (pid, _, command) ->
+            launchdSimDevice.find(command)?.groupValues?.get(1)?.let { udid ->
+                val tree = mutableListOf<Int>()
+                val pending = ArrayDeque(listOf(pid))
+                while (pending.isNotEmpty()) {
+                    val next = pending.removeFirst()
+                    tree += next
+                    pending += children[next].orEmpty()
+                }
+                udid to tree
+            }
+        }.toMap()
+    }
 
     fun parseVmStat(output: String): VmStat {
         val pageSize = Regex("page size of (\\d+) bytes").find(output)?.groupValues?.get(1)?.toLong()

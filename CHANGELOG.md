@@ -89,9 +89,10 @@ Branch `addObservabilityControls`. `GET /status`, `/status/config` and `/quitqui
   - histogram `device_server_agent_status_seconds{result, running}`: the DeviceAgent/WebDriverAgent health check
     each simulator already runs every 60 s;
   - health checks `host_cpu_busy_percent`, `host_cpu_user_percent`, `host_cpu_system_percent` (between background
-    refreshes) and `simulators_memory_gb`, `simulator_memory_gb_each`: physical footprint (Activity Monitor's
-    Memory, via `proc_pid_rusage`) of the processes inside simulators. RSS would count the runtime's shared
-    libraries in each of ~270 processes per simulator (30 GB instead of 4.3 GB for one iPhone 11).
+    refreshes) and `simulators_memory_gb`, `simulator_memory_gb_each` (average per booted simulator),
+    `simulator_memory_gb_max` (largest, with its UDID): physical footprint (Activity Monitor's Memory, via
+    `proc_pid_rusage`) of each booted simulator's `launchd_sim` and all its descendants. RSS would count the
+    runtime's shared libraries in each of ~270 processes per simulator (30 GB instead of 4.3 GB for one iPhone 11).
   `running` is the number of simulators the server holds; labels stay low-cardinality (0 to the limit).
 - Config: new optional `health` section (`probe_urls`, `ntp_server`, `expected_subnets`, `expected_xcode_version`,
   `thresholds`), see `config/config.schema.json`. The default `probe_urls` is only `https://storage.googleapis.com/`;
