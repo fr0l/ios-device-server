@@ -2645,6 +2645,48 @@
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacHostStats$Hardware",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.health.MacOsParsers$SimulatorsMemory",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.metrics.Counter",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.metrics.DeviceServerMetrics",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.metrics.DeviceServerMetrics$Companion",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.metrics.Histogram",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.metrics.Histogram$Series",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
     }
   ],
   "resources": [
@@ -2755,6 +2797,14 @@
       {
         "returnType": "jint",
         "parameterTypes": []
+      },
+      {
+        "returnType": "jint",
+        "parameterTypes": [
+          "jint",
+          "jint",
+          "void*"
+        ]
       }
     ]
   }

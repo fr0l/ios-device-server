@@ -147,6 +147,40 @@ class HealthServiceTest {
     }
 
     @Test
+    fun simulatorsMemoryAndHostCpuChecks() {
+        val ticks = ArrayDeque(
+            listOf(MacHostStats.CpuTicks(100, 50, 850, 0), MacHostStats.CpuTicks(160, 70, 970, 0))
+        )
+        val cpuSampler = HostResourcesSampler(
+            sample = {
+                MacHostStats.Sample(1L shl 30, 16384, 1000, 1000, 1, 0, listOf(1.0, 1.0, 1.0), ticks.removeFirst())
+            },
+            cores = 10
+        )
+        val probes = HostProbes(
+            config = HealthConfig(probeUrls = emptyList()),
+            volumes = emptyMap(),
+            isDeviceManagerReady = { true },
+            simulatorUsage = { 4 to 10 },
+            runner = { _, _ -> CommandOutput(0, "11 /x/CoreSimulator/Devices/a/data/app\n12 /x/RuntimeRoot/usr/libexec/d\n13 /usr/bin/other\n14 /x/RuntimeRoot/gone\n") },
+            cpuSampler = cpuSampler,
+            physicalFootprint = { pid -> mapOf(11 to (1L shl 30), 12 to (3L shl 30), 13 to (9L shl 30))[pid] }
+        )
+        val heavy = probes.heavy().associateBy { it.name }
+
+        val memory = heavy.getValue("simulators_memory").run().associateBy { it.name }
+        assertEquals(4.0, memory.getValue("simulators_memory_gb").value)
+        assertEquals(1.0, memory.getValue("simulator_memory_gb_each").value)
+
+        assertEquals(CheckStatus.UNKNOWN, heavy.getValue("host_cpu").run().single().status)
+        // 60 user, 20 system, 120 idle of 200 ticks
+        val cpu = heavy.getValue("host_cpu").run().associateBy { it.name }
+        assertEquals(40.0, cpu.getValue("host_cpu_busy_percent").value)
+        assertEquals(30.0, cpu.getValue("host_cpu_user_percent").value)
+        assertEquals(10.0, cpu.getValue("host_cpu_system_percent").value)
+    }
+
+    @Test
     fun bootStatsKeepsOnlyTheLastTenBootsForTheVerdict() {
         val boots = BootStats()
         repeat(4) { boots.recordFailure(Duration.ofSeconds(180)) }

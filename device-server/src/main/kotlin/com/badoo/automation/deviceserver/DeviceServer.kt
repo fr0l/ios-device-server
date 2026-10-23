@@ -10,6 +10,7 @@ import com.badoo.automation.deviceserver.health.HostProbes
 import com.badoo.automation.deviceserver.health.HostResourcesSampler
 import com.badoo.automation.deviceserver.host.HostFactory
 import com.badoo.automation.deviceserver.host.management.DeviceManager
+import com.badoo.automation.deviceserver.metrics.DeviceServerMetrics
 import com.badoo.automation.deviceserver.host.management.errors.DeviceCreationException
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesException
@@ -112,6 +113,7 @@ fun Application.module() {
     ).apply { start() }
     val speedTest = SpeedTest()
     val hostResources = HostResourcesSampler()
+    DeviceServerMetrics.shared.runningSimulators = { deviceManager.simulatorUsage().first }
 
     install(DefaultHeaders)
     install(CallLogging) {
@@ -166,7 +168,7 @@ fun Application.module() {
                 call.respond(healthService.report())
             }
             get("health/metrics") {
-                call.respondText(healthService.prometheus(), ContentType.parse("text/plain; version=0.0.4"))
+                call.respondText(healthService.prometheus() + DeviceServerMetrics.shared.render(), ContentType.parse("text/plain; version=0.0.4"))
             }
             // Measured on every request (microseconds, no system utility), unlike the cached /status/health
             get("resources") {

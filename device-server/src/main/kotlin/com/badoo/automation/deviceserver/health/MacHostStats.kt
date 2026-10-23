@@ -25,6 +25,9 @@ object MacHostStats {
         val cpuTicks: CpuTicks
     )
 
+    /** What the host is, for grouping fleet metrics by hardware class. */
+    data class Hardware(val chip: String, val performanceCores: Int, val efficiencyCores: Int, val memoryBytes: Long, val macOs: String)
+
     /** Cumulative ticks of all cores since boot; they wrap at 2^32. */
     data class CpuTicks(val user: Long, val system: Long, val idle: Long, val nice: Long)
 
@@ -37,6 +40,7 @@ object MacHostStats {
 
     private val sysctlbyname = downcall("sysctlbyname", FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, JAVA_LONG))
     private val hostStatistics = downcall("host_statistics", FunctionDescriptor.of(JAVA_INT, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS))
+    private val procPidRusage = downcall("proc_pid_rusage", FunctionDescriptor.of(JAVA_INT, JAVA_INT, JAVA_INT, ADDRESS))
     private val hostStatistics64 = downcall("host_statistics64", FunctionDescriptor.of(JAVA_INT, JAVA_INT, JAVA_INT, ADDRESS, ADDRESS))
 
     // Each mach_host_self() call adds a send right to the port, so it is taken once
@@ -61,6 +65,29 @@ object MacHostStats {
             load = (0 until 3).map { loadavg.unsignedInt(it * 4L) / fixedPointScale },
             // host_cpu_load_info: cpu_ticks[CPU_STATE_USER, SYSTEM, IDLE, NICE]
             cpuTicks = CpuTicks(cpu.unsignedInt(0), cpu.unsignedInt(4), cpu.unsignedInt(8), cpu.unsignedInt(12))
+        )
+    }
+
+    /**
+     * Physical footprint of a process (Activity Monitor's Memory): its own pages plus compressed ones, shared pages
+     * counted once. Null when the process is gone or not readable.
+     */
+    fun physicalFootprint(pid: Int): Long? = Arena.ofConfined().use { arena ->
+        // struct rusage_info_v0 (RUSAGE_INFO_V0 = 0): ri_phys_footprint is the uint64 at offset 72 of 96 bytes
+        val info = arena.allocate(96, 8)
+        val result = procPidRusage.value.invokeExact(pid, 0, info) as Int
+        if (result == 0) info.get(JAVA_LONG, 72) else null
+    }
+
+    fun hardware(): Hardware = Arena.ofConfined().use { arena ->
+        // perflevel0 is the performance cluster, perflevel1 the efficiency one; Intel Macs have neither
+        val performance = arena.sysctlNumberOrNull("hw.perflevel0.physicalcpu") ?: arena.sysctlNumber("hw.physicalcpu")
+        Hardware(
+            chip = arena.sysctlString("machdep.cpu.brand_string"),
+            performanceCores = performance.toInt(),
+            efficiencyCores = (arena.sysctlNumberOrNull("hw.perflevel1.physicalcpu") ?: 0L).toInt(),
+            memoryBytes = arena.sysctlNumber("hw.memsize"),
+            macOs = arena.sysctlString("kern.osproductversion")
         )
     }
 
@@ -89,6 +116,14 @@ object MacHostStats {
         val value = sysctl(name, 8)
         return if (value.byteSize() == 4L) value.get(JAVA_INT, 0).toLong() else value.get(JAVA_LONG, 0)
     }
+
+    private fun Arena.sysctlNumberOrNull(name: String): Long? = try {
+        sysctlNumber(name)
+    } catch (e: IllegalStateException) {
+        null
+    }
+
+    private fun Arena.sysctlString(name: String): String = sysctl(name, 256).getString(0)
 
     private fun MemorySegment.unsignedInt(offset: Long): Long = Integer.toUnsignedLong(get(JAVA_INT, offset))
 }
