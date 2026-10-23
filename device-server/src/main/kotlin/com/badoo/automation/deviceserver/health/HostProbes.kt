@@ -205,17 +205,26 @@ class HostProbes(
 
     // Physical footprint, not RSS: every simulator process maps the runtime's shared libraries, so RSS counts them ~150 times
     private fun simulatorsMemory(): List<HealthCheck> {
-        val footprints = MacOsParsers.parseSimulatorPids(exec("/bin/ps", "-axo", "pid=,command=")).mapNotNull(physicalFootprint)
-        val totalGb = round(footprints.sum() / 1_073_741_824.0)
-        val running = simulatorUsage().first
+        val simulators = MacOsParsers.parseSimulatorProcesses(exec("/bin/ps", "-axo", "pid=,ppid=,command="))
+        val bytesBySimulator = simulators.mapValues { (_, pids) -> pids.sumOf { physicalFootprint(it) ?: 0L } }
+        val processes = simulators.values.sumOf { it.size }
+        val totalGb = round(bytesBySimulator.values.sum() / 1_073_741_824.0)
+        val booted = simulators.size
         return listOfNotNull(
             info(
                 "simulators_memory_gb", PROCESS, totalGb, "GB",
-                "$totalGb GB physical footprint of ${footprints.size} simulator processes, $running simulators held by the server",
-                details = mapOf("processes" to footprints.size, "running" to running)
+                "$totalGb GB physical footprint of $booted booted simulators ($processes processes), " +
+                    "${simulatorUsage().first} held by the server",
+                details = mapOf("booted" to booted, "processes" to processes, "running" to simulatorUsage().first)
             ),
-            running.takeIf { it > 0 }?.let {
-                info("simulator_memory_gb_each", PROCESS, round(totalGb / it), "GB", "${round(totalGb / it)} GB per held simulator")
+            booted.takeIf { it > 0 }?.let {
+                info("simulator_memory_gb_each", PROCESS, round(totalGb / it), "GB", "${round(totalGb / it)} GB per booted simulator on average")
+            },
+            bytesBySimulator.maxByOrNull { it.value }?.let { (udid, bytes) ->
+                info(
+                    "simulator_memory_gb_max", PROCESS, round(bytes / 1_073_741_824.0), "GB",
+                    "largest simulator $udid uses ${round(bytes / 1_073_741_824.0)} GB", details = mapOf("udid" to udid)
+                )
             }
         )
     }

@@ -11,16 +11,21 @@ class MacOsParsersTest {
     }
 
     @Test
-    fun simulatorPidsAreOnlyProcessesInsideSimulators() {
+    fun simulatorProcessesAreTheLaunchdSimTreesByUdid() {
+        val a = "9A5DBEC2-9234-4EB9-9434-72C5DF7DEA0B"
+        val b = "4BCC071E-9613-4129-A40F-E5381EDBDB8E"
         val ps = """
-              2048 /Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/launchd_sim /Users/qa/Library/Developer/CoreSimulator/Devices/9A5D/data/var/run/launchd_bootstrap.plist
-              2051 /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/CoreServices/SpringBoard.app/SpringBoard
-             10240 /Users/qa/Library/Developer/CoreSimulator/Devices/9A5D/data/Containers/Bundle/Application/1/DeviceAgent-Runner.app/DeviceAgent-Runner
-               999 /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building
-               409 /usr/sbin/cfprefsd agent
+              2048     1 /Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/launchd_sim /Users/qa/Library/Developer/CoreSimulator/Devices/$a/data/var/run/launchd_bootstrap.plist
+              2051  2048 /Library/Developer/CoreSimulator/Volumes/iOS_23F77/RuntimeRoot/System/Library/CoreServices/SpringBoard.app/SpringBoard
+              2060  2048 /usr/libexec/triald
+              2061  2060 assetsd
+              3000     1 /Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/launchd_sim /Users/qa/Library/Developer/CoreSimulator/Devices/$b/data/var/run/launchd_bootstrap.plist
+              3001  3000 /usr/libexec/pkd
+               999   500 /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -destination id=$a -xctestrun /Users/qa/Library/Developer/CoreSimulator/Devices/$a/x.xctestrun
+               409     1 /usr/sbin/cfprefsd agent
         """.trimIndent()
 
-        assertEquals(listOf(2048, 2051, 10240), MacOsParsers.parseSimulatorPids(ps))
+        assertEquals(mapOf(a to listOf(2048, 2051, 2060, 2061), b to listOf(3000, 3001)), MacOsParsers.parseSimulatorProcesses(ps))
     }
 
     @Test
