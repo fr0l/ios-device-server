@@ -11,6 +11,19 @@ class MacOsParsersTest {
     }
 
     @Test
+    fun simulatorPidsAreOnlyProcessesInsideSimulators() {
+        val ps = """
+              2048 /Library/Developer/PrivateFrameworks/CoreSimulator.framework/Versions/A/Resources/bin/launchd_sim /Users/qa/Library/Developer/CoreSimulator/Devices/9A5D/data/var/run/launchd_bootstrap.plist
+              2051 /Library/Developer/CoreSimulator/Volumes/iOS_23F77/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 26.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/CoreServices/SpringBoard.app/SpringBoard
+             10240 /Users/qa/Library/Developer/CoreSimulator/Devices/9A5D/data/Containers/Bundle/Application/1/DeviceAgent-Runner.app/DeviceAgent-Runner
+               999 /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building
+               409 /usr/sbin/cfprefsd agent
+        """.trimIndent()
+
+        assertEquals(listOf(2048, 2051, 10240), MacOsParsers.parseSimulatorPids(ps))
+    }
+
+    @Test
     fun processStats() {
         assertEquals(MacOsParsers.ProcessStats(98304, 0.3), MacOsParsers.parseProcessStats(" 98304   0.3\n"))
     }

@@ -81,6 +81,18 @@ Branch `addObservabilityControls`. `GET /status`, `/status/config` and `/quitqui
   over the interval since the previous request. The CPU values are null on the first request and when the kernel
   accounted no ticks since the previous one. Read in-process with `sysctlbyname` and Mach `host_statistics`
   (`java.lang.foreign` downcalls, registered in the native-image metadata); no utility is spawned.
+- Metrics for sizing `simulators.limit` and `concurrent_boots` per hardware class, in `GET /status/health/metrics`:
+  - `device_server_host_info{chip, performance_cores, efficiency_cores, memory_gb, macos, xcode} 1`;
+  - histogram `device_server_simulator_boot_seconds{boots_in_flight, running}` (successful boots, simctl boot to
+    bootstatus) and counter `device_server_simulator_boots_total{result="ok|timeout|failed", boots_in_flight}`;
+    `timeout` is a boot that failed after the 180 s bootstatus limit;
+  - histogram `device_server_agent_status_seconds{result, running}`: the DeviceAgent/WebDriverAgent health check
+    each simulator already runs every 60 s;
+  - health checks `host_cpu_busy_percent`, `host_cpu_user_percent`, `host_cpu_system_percent` (between background
+    refreshes) and `simulators_memory_gb`, `simulator_memory_gb_each`: physical footprint (Activity Monitor's
+    Memory, via `proc_pid_rusage`) of the processes inside simulators. RSS would count the runtime's shared
+    libraries in each of ~270 processes per simulator (30 GB instead of 4.3 GB for one iPhone 11).
+  `running` is the number of simulators the server holds; labels stay low-cardinality (0 to the limit).
 - Config: new optional `health` section (`probe_urls`, `ntp_server`, `expected_subnets`, `expected_xcode_version`,
   `thresholds`), see `config/config.schema.json`. The default `probe_urls` is only `https://storage.googleapis.com/`;
   add your CI server in the host config.

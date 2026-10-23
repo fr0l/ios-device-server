@@ -49,6 +49,16 @@ object MacOsParsers {
         return ProcessStats(fields[0].toLong(), fields[1].replace(',', '.').toDouble())
     }
 
+    /**
+     * `ps -axo pid=,command=`: processes running inside simulators, i.e. launchd_sim and everything it starts from the
+     * runtime (`RuntimeRoot/`) or a simulator's data (`CoreSimulator/Devices/`, apps and DeviceAgent).
+     */
+    fun parseSimulatorPids(output: String): List<Int> = output.lineSequence()
+        .map { it.trim() }
+        .filter { "/CoreSimulator/Devices/" in it || "/RuntimeRoot/" in it }
+        .mapNotNull { it.substringBefore(' ').toIntOrNull() }
+        .toList()
+
     fun parseVmStat(output: String): VmStat {
         val pageSize = Regex("page size of (\\d+) bytes").find(output)?.groupValues?.get(1)?.toLong()
             ?: throw IllegalArgumentException("vm_stat output has no page size")

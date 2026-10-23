@@ -3,7 +3,7 @@ package com.badoo.automation.deviceserver.ios.simulator
 import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.LogMarkers
 import com.badoo.automation.deviceserver.data.*
-import com.badoo.automation.deviceserver.health.BootStats
+import com.badoo.automation.deviceserver.metrics.DeviceServerMetrics
 import com.badoo.automation.deviceserver.host.IRemote
 import com.badoo.automation.deviceserver.ios.proc.*
 import com.badoo.automation.deviceserver.ios.simulator.data.*
@@ -315,20 +315,15 @@ class Simulator(
             {
                 concurrentBootsSemaphore.withSemaphore("Boot operation of ${this@Simulator}", logger, logMarker) {
                     logger.info(logMarker, "Booting ${this@Simulator}")
-                    val started = System.nanoTime()
-                    try {
+                    val bootStatusTimeout = Duration.ofSeconds(180)
+                    val nanos = DeviceServerMetrics.shared.recordSimulatorBoot(bootStatusTimeout) {
                         launchdDisabledStore.disable(udid, disabledServices)
                         simCtlUtility.bootSimulator(udid = udid, timeOut = Duration.ofSeconds(180L), logMarker = logMarker)
 
                         Thread.sleep(1000L) // make sure enough time for initial boot before any other actions
 
-                        simCtlUtility.bootStatusSimulator(udid, Duration.ofSeconds(180), logMarker)
-                    } catch (e: Exception) {
-                        BootStats.simulators.recordFailure(Duration.ofNanos(System.nanoTime() - started))
-                        throw e
+                        simCtlUtility.bootStatusSimulator(udid, bootStatusTimeout, logMarker)
                     }
-                    val nanos = System.nanoTime() - started
-                    BootStats.simulators.recordSuccess(Duration.ofNanos(nanos))
                     val timingMarker = MapEntriesAppendingMarker(commonLogMarkerDetails + mapOf("simulatorBootTime" to NANOSECONDS.toSeconds(nanos)))
                     logger.info(timingMarker, "Device ${this@Simulator} is sufficiently booted")
                 }
@@ -379,7 +374,7 @@ class Simulator(
 
     private fun performInstrumentationAgentHealthCheck(wdaFailCount: Int, maxFailCount: Int) {
         var wdaFailCount1 = wdaFailCount
-        if (instrumentationAgent.isHealthy()) {
+        if (DeviceServerMetrics.shared.recordAgentStatus(instrumentationAgent::isHealthy)) {
             wdaFailCount1 = 0
         } else {
             (1..5).forEach {

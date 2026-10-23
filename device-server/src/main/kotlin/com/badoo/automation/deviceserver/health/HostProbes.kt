@@ -21,7 +21,10 @@ class HostProbes(
     private val runner: CommandRunner = ProcessCommandRunner(),
     private val cores: Int = Runtime.getRuntime().availableProcessors(),
     private val bootStats: BootStats = BootStats.simulators,
-    private val pid: Long = ProcessHandle.current().pid()
+    private val pid: Long = ProcessHandle.current().pid(),
+    // Its own CPU baseline, so the CPU share covers the interval between two background refreshes
+    private val cpuSampler: HostResourcesSampler = HostResourcesSampler(),
+    private val physicalFootprint: (Int) -> Long? = MacHostStats::physicalFootprint
 ) {
     private val limits = config.thresholds
 
@@ -33,6 +36,8 @@ class HostProbes(
         Probe("load_per_core", RESOURCES, limits.loadPerCore.critical, ::load),
         Probe("memory", RESOURCES, critical = true, run = ::memory),
         Probe("process_resources", PROCESS, limits.processMemoryMb.critical, ::processResources),
+        Probe("host_cpu", RESOURCES, critical = false, run = ::hostCpu),
+        Probe("simulators_memory", PROCESS, critical = false, run = ::simulatorsMemory),
         Probe("disk", RESOURCES, critical = true, run = ::disks),
         Probe("thermal_state", RESOURCES, critical = false, run = ::thermal),
         Probe("simctl_list_ms", PROCESS, critical = true, run = ::simctlList),
@@ -184,6 +189,34 @@ class HostProbes(
                 "process_cpu_percent", PROCESS, stats.cpuPercent, "%", limits.processCpuPercent, higherIsWorse = true,
                 message = "device server uses ${stats.cpuPercent}% CPU, 100% being one core"
             )
+        )
+    }
+
+    private fun hostCpu(): List<HealthCheck> {
+        val cpu = cpuSampler.read()
+        val idle = cpu.cpuIdlePercent
+            ?: return listOf(HealthCheck("host_cpu_busy_percent", RESOURCES, CheckStatus.UNKNOWN, null, null, "measured from the next refresh", unit = "%"))
+        return listOf(
+            info("host_cpu_busy_percent", RESOURCES, round(100.0 - idle), "%", "CPU busy ${round(100.0 - idle)}% since the previous refresh"),
+            info("host_cpu_user_percent", RESOURCES, cpu.cpuUserPercent, "%", "CPU user ${cpu.cpuUserPercent}%, including nice"),
+            info("host_cpu_system_percent", RESOURCES, cpu.cpuSystemPercent, "%", "CPU system ${cpu.cpuSystemPercent}%")
+        )
+    }
+
+    // Physical footprint, not RSS: every simulator process maps the runtime's shared libraries, so RSS counts them ~150 times
+    private fun simulatorsMemory(): List<HealthCheck> {
+        val footprints = MacOsParsers.parseSimulatorPids(exec("/bin/ps", "-axo", "pid=,command=")).mapNotNull(physicalFootprint)
+        val totalGb = round(footprints.sum() / 1_073_741_824.0)
+        val running = simulatorUsage().first
+        return listOfNotNull(
+            info(
+                "simulators_memory_gb", PROCESS, totalGb, "GB",
+                "$totalGb GB physical footprint of ${footprints.size} simulator processes, $running simulators held by the server",
+                details = mapOf("processes" to footprints.size, "running" to running)
+            ),
+            running.takeIf { it > 0 }?.let {
+                info("simulator_memory_gb_each", PROCESS, round(totalGb / it), "GB", "${round(totalGb / it)} GB per held simulator")
+            }
         )
     }
 
