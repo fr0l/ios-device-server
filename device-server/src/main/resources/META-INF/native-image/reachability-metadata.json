@@ -2688,6 +2688,12 @@
       "allPublicConstructors": true,
       "allPublicMethods": true,
       "allPublicFields": true
+    },
+    {
+      "type": "com.badoo.automation.deviceserver.ios.device.DeviceCrashReports",
+      "allPublicConstructors": true,
+      "allPublicMethods": true,
+      "allPublicFields": true
     }
   ],
   "resources": [

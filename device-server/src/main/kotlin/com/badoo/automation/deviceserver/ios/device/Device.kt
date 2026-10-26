@@ -11,14 +11,12 @@ import com.badoo.automation.deviceserver.ios.simulator.periodicTasksPool
 import com.badoo.automation.deviceserver.ios.simulator.video.FFMPEGVideoRecorder
 import com.badoo.automation.deviceserver.ios.simulator.video.VideoRecorder
 import com.badoo.automation.deviceserver.util.*
-import com.badoo.automation.deviceserver.util.Executables
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.LoggerFactory
 import org.slf4j.Marker
 import java.io.File
 import java.net.URI
 import java.net.URL
-import java.nio.file.Files
 import java.time.Duration
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -42,6 +40,8 @@ class Device(
     }
 
     override val osLog = RealDeviceSysLog(remote, udid)
+
+    private val crashReports = DeviceCrashReports(remote, udid)
 
     private val calabashProxy = usbProxyFactory.create(
         udid = deviceInfo.udid,
@@ -222,31 +222,9 @@ class Device(
         return crashLogs(null).lastOrNull() ?: CrashLog("", "")
     }
 
-    fun crashLogs(appName: String?): List<CrashLog> {
-        val crashReportsPath = Files.createTempDirectory("crashReports")
-        val filter = appName?.let { "--filter \"$appName\"" } ?: ""
-        val command = "${Executables.require("idevicecrashreport", Executables.LIBIMOBILEDEVICE_INSTALL)} --udid $udid $filter ${crashReportsPath.toAbsolutePath()}"
+    fun crashLogs(appName: String?): List<CrashLog> = crashReports.pull(appName)
 
-        try {
-            val result = remote.shell(command, returnOnFailure = true)
-
-            if (!result.isSuccess) {
-                logger.error(logMarker, "Failed to collect crash reports. Result stdErr: ${result.stdErr}")
-            }
-
-            return File(crashReportsPath.toUri())
-                .walk()
-                .filter { it.isFile }
-                .map { CrashLog(it.name, String(Files.readAllBytes(it.toPath()))) }
-                .toList()
-
-        } finally {
-            Files.walk(crashReportsPath)
-                .sorted(Comparator.reverseOrder())
-                .map { it.toFile() }
-                .forEach { it.delete() }
-        }
-    }
+    fun deleteCrashLogs(): Boolean = crashReports.delete()
 
     val asyncExecutor: ExecutorService = Executors.newFixedThreadPool(3)
 

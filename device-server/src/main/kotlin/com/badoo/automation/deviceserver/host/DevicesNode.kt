@@ -382,7 +382,7 @@ class DevicesNode(
     }
 
     override fun deleteCrashLogs(deviceRef: DeviceRef): Boolean {
-        return false // crash logs are not supported on devices yet
+        return slotByExternalRef(deviceRef).device.deleteCrashLogs()
     }
 
     override fun videoRecordingDelete(deviceRef: DeviceRef) {
