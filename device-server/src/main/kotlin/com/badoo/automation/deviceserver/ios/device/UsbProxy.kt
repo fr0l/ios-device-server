@@ -20,7 +20,8 @@ class UsbProxy(
         commandEnvironment: Map<String, String>,
         out_reader: (line: String) -> Unit,
         err_reader: (line: String) -> Unit
-    ) -> SubProcess = SubProcess.Companion::fromCommand
+    ) -> SubProcess = SubProcess.Companion::fromCommand,
+    private val iproxyBinary: String = Executables.require("iproxy", Executables.IPROXY_INSTALL)
 ) {
     private val logger: Logger = LoggerFactory.getLogger(javaClass.simpleName)
     private val logMarker = MapEntriesAppendingMarker(
@@ -32,13 +33,11 @@ class UsbProxy(
 
     override fun toString(): String = "<iproxy $localPort $udid>"
 
-    val iproxyBinary: String = Executables.require("iproxy", Executables.IPROXY_INSTALL)
-    val socatBinary: String = Executables.require("socat", Executables.SOCAT_INSTALL)
     private var iproxy: SubProcess? = null
-    private var socat: SubProcess? = null
 
     fun start(devicePort: Int) {
-        val iProxyCommand = listOf(iproxyBinary, "$localPort:$devicePort", "--udid", udid)
+        // Clients connect from other hosts, and the default listen address differs between iproxy versions.
+        val iProxyCommand = listOf(iproxyBinary, "$localPort:$devicePort", "--udid", udid, "--source", "0.0.0.0")
         iproxy = childFactory(
             remote.hostName,
             iProxyCommand,
@@ -46,18 +45,10 @@ class UsbProxy(
             { message -> }, // { message -> logger.trace(logMarker, "${this}: iproxy <o>: ${message.trim()}") },
             { message -> logger.debug(logMarker, "${this}: iproxy <e>: ${message.trim()}") }
         )
-
-        socat = childFactory(
-            remote.hostName,
-            listOf(socatBinary, "tcp-listen:$localPort,reuseaddr,fork", "tcp:0.0.0.0:$localPort"),
-            mapOf(),
-            { message -> logger.trace(logMarker, "${this}: socat <o>: ${message.trim()}") },
-            { message -> logger.debug(logMarker, "${this}: socat <e>: ${message.trim()}") }
-        )
     }
 
     fun isHealthy(): Boolean {
-        return (iproxy?.isAlive() ?: false) && (socat?.isAlive() ?: false)
+        return iproxy?.isAlive() ?: false
     }
 
     fun stop() {
@@ -65,12 +56,6 @@ class UsbProxy(
             logger.debug(logMarker, "$this — Killing child process $it")
             it.kill()
             iproxy = null
-        }
-
-        socat?.let {
-            logger.debug(logMarker, "$this — Killing child process $it")
-            it.kill()
-            socat = null
         }
     }
 }

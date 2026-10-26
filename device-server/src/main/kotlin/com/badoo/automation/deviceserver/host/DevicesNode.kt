@@ -473,8 +473,7 @@ class DevicesNode(
 
     private companion object {
         private val REQUIRED_TOOLS = listOf(
-            "iproxy" to Executables.IPROXY_INSTALL,
-            "socat" to Executables.SOCAT_INSTALL
+            "iproxy" to Executables.IPROXY_INSTALL
         )
     }
 }

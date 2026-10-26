@@ -7,7 +7,6 @@ object Executables {
     private val HOMEBREW_BIN_DIRS = listOf("/opt/homebrew/bin", "/usr/local/bin")
 
     const val IPROXY_INSTALL = "brew install libusbmuxd"
-    const val SOCAT_INSTALL = "brew install socat"
     const val LIBIMOBILEDEVICE_INSTALL = "brew install libimobiledevice"
     const val FFMPEG_INSTALL = "brew install ffmpeg"
 
