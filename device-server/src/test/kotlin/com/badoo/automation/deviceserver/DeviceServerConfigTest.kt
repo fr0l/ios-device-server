@@ -79,6 +79,12 @@ class DeviceServerConfigTest {
     }
 
     @Test
+    fun publicHostIsLoopbackUnlessConfigured() {
+        assertEquals("127.0.0.1", JsonMapper().fromJson<DeviceServerConfig>("{}").publicHost())
+        assertEquals("192.168.65.5", JsonMapper().fromJson<DeviceServerConfig>("""{"public_host": "192.168.65.5"}""").publicHost())
+    }
+
+    @Test
     fun simulatorsConfigShouldHaveDefaults() {
         val config = JsonMapper().fromJson<SimulatorsConfig>("{}")
 

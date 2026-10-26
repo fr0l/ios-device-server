@@ -13,7 +13,6 @@ import com.badoo.automation.deviceserver.host.SimulatorsNode
 import com.badoo.automation.deviceserver.host.management.errors.DeviceNotFoundException
 import com.badoo.automation.deviceserver.host.management.errors.NoAliveNodesException
 import com.badoo.automation.deviceserver.ios.ActiveDevices
-import com.badoo.automation.deviceserver.util.NetworkUtils
 import com.badoo.automation.deviceserver.util.deleteRecursivelyIfExist
 import com.badoo.automation.deviceserver.util.ensureDirectoryExists
 import net.logstash.logback.marker.MapEntriesAppendingMarker
@@ -37,7 +36,7 @@ class DeviceManager(
     @Volatile private var ready = false
 
     fun setup() {
-        val publicHostName = config.publicHostName ?: NetworkUtils.getAddresses().first().ip
+        val publicHostName = config.publicHost()
         val remote = Remote(publicHostName, publicHostName)
 
         val hostChecker = HostChecker(remote, config.simulators?.shutdownSimulators ?: false)

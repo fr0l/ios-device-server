@@ -9,6 +9,8 @@ data class NetworkInterfaceInfo(
 
 class NetworkUtils {
     companion object {
+        const val LOOPBACK = "127.0.0.1"
+
         fun getAddresses(): List<NetworkInterfaceInfo> {
             val networkInterfaces = NetworkInterface.getNetworkInterfaces().toList()
                 .filter { it.displayName.startsWith("en") || it.displayName.startsWith("eth") } // only include Ethernet/Wi-Fi interfaces on macOS / Linux
@@ -23,7 +25,7 @@ class NetworkUtils {
             return networkInterfaces.ifEmpty {
                 listOf(
                     NetworkInterfaceInfo(
-                        ip = "127.0.0.1", hostname = "localhost", networkInterfaceName = "lo0"
+                        ip = LOOPBACK, hostname = "localhost", networkInterfaceName = "lo0"
                     )
                 )
             }

@@ -4,7 +4,6 @@ import com.badoo.automation.deviceserver.ApplicationConfiguration
 import com.badoo.automation.deviceserver.DeviceServerConfig
 import com.badoo.automation.deviceserver.host.management.PortAllocator
 import com.badoo.automation.deviceserver.host.management.PublicPortPool
-import com.badoo.automation.deviceserver.util.NetworkUtils
 import com.badoo.automation.deviceserver.util.WdaDeviceBundle
 import com.badoo.automation.deviceserver.util.WdaDeviceBundlesProvider
 import com.badoo.automation.deviceserver.util.WdaSimulatorBundles
@@ -21,7 +20,7 @@ class HostFactory(
     private val logger = LoggerFactory.getLogger(javaClass.simpleName)
 
     fun createNodes(config: DeviceServerConfig): List<IDeviceNode> {
-        val publicHostName = config.publicHostName ?: NetworkUtils.getAddresses().first().ip
+        val publicHostName = config.publicHost()
         val remote = remoteProvider(publicHostName, publicHostName)
         val privatePortAllocator = PortAllocator(remote)
         privatePortAllocator.refreshPortAvailability()

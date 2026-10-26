@@ -9,12 +9,12 @@ import com.badoo.automation.deviceserver.host.IRemote
 import com.badoo.automation.deviceserver.util.Posix
 import com.badoo.automation.deviceserver.util.pollFor
 import com.badoo.automation.deviceserver.util.Executables
+import com.badoo.automation.deviceserver.util.NetworkUtils
 import net.logstash.logback.marker.MapEntriesAppendingMarker
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.File
 import java.net.URI
-import java.net.URL
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 
@@ -32,7 +32,7 @@ class FFMPEGVideoRecorder(
     private val videoFile = File(config.tempFolder, videoFileName)
     private val videoLogFile = File(config.tempFolder, "${videoFileName}.log")
 
-    private val mjpegStreamUrl = URI("http://${remote.publicHostName}:${mjpegServerPort}").toURL()
+    private val mjpegStreamUrl = URI("http://${NetworkUtils.LOOPBACK}:${mjpegServerPort}").toURL()
 
     override fun toString(): String = "${javaClass.simpleName} for $ref"
 

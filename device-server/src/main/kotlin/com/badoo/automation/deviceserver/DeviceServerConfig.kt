@@ -2,6 +2,7 @@ package com.badoo.automation.deviceserver
 
 import com.badoo.automation.deviceserver.health.HealthConfig
 import com.badoo.automation.deviceserver.ios.device.ConfiguredDevice
+import com.badoo.automation.deviceserver.util.NetworkUtils
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 
@@ -22,7 +23,13 @@ data class DeviceServerConfig(
     val simulators: SimulatorsConfig? = null,
     val devices: DevicesConfig? = null,
     val health: HealthConfig = HealthConfig()
-)
+) {
+    /**
+     * The host clients reach devices on. Local runs use the loopback, so the macOS firewall does not block them; CI
+     * deployments set `public_host` to the Mac's address.
+     */
+    fun publicHost(): String = publicHostName ?: NetworkUtils.LOOPBACK
+}
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SimulatorsConfig(

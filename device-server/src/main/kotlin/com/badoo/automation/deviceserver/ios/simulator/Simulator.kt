@@ -50,14 +50,15 @@ class Simulator(
     override val ref = deviceRef
     override val udid: UDID = deviceInfo.udid
     // Clients connect to the public ports; the relays forward to the private ones that WDA and the app listen on.
+    // The server reaches its own simulators over the loopback, which the macOS firewall does not filter.
     override val wdaEndpoint = URI("http://${remote.publicHostName}:${allocatedPorts.wdaPort}/")
     override val calabashEndpoint = URI("http://${remote.publicHostName}:${allocatedPorts.calabashPort}/")
     override val calabashPort: Int = privatePorts.calabashPort
     override val mjpegServerPort: Int = allocatedPorts.mjpegServerPort
-    private val privateWdaEndpoint = URI("http://${remote.publicHostName}:${privatePorts.wdaPort}/")
+    private val privateWdaEndpoint = URI("http://${NetworkUtils.LOOPBACK}:${privatePorts.wdaPort}/")
 
     private val portRelays = allocatedPorts.toList().zip(privatePorts.toList()).map { (publicPort, privatePort) ->
-        TcpRelay(publicPort, remote.publicHostName, privatePort)
+        TcpRelay(publicPort, NetworkUtils.LOOPBACK, privatePort)
     }
     override val locationManager: LocationManager = LocationManager(remote, udid)
 
