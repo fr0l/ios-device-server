@@ -256,6 +256,10 @@ abstract class GenerateMetadataTask : DefaultTask() {
           normalizedEntry.addProperty("allPublicConstructors", true)
           normalizedEntry.addProperty("allPublicMethods", true)
           normalizedEntry.addProperty("allPublicFields", true)
+          // Keep access added by hand, e.g. allDeclaredFields for classes Jackson reads through private fields
+          entry.entrySet()
+            .filter { (key, _) -> key.startsWith("allDeclared") }
+            .forEach { (key, value) -> normalizedEntry.add(key, value) }
           reflectionArray.add(normalizedEntry)
         } else {
           // Keep other types as-is (libraries, frameworks)
