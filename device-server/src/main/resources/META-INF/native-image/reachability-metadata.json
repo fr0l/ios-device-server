@@ -1244,7 +1244,8 @@
       "type": "com.badoo.automation.deviceserver.data.SysLogCaptureOptions",
       "allPublicConstructors": true,
       "allPublicMethods": true,
-      "allPublicFields": true
+      "allPublicFields": true,
+      "allDeclaredFields": true
     },
     {
       "type": "com.badoo.automation.deviceserver.data.UrlDto",
