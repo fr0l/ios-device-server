@@ -44,14 +44,7 @@ class SimulatorProvider(
         val deviceType: DeviceType = desiredCaps.toDeviceType(simulatorRepository)
         val runtime = desiredCaps.toRuntime(simulatorRepository)
 
-        // check if exists
-        simulatorRegistry.getBaseSimulators().find { baseSimulator: Simulator ->
-            baseSimulator.runtimeIdentifier == runtime.runtimeIdentifier && baseSimulator.deviceTypeIdentifier == deviceType.identifier
-        }?.let { registryRecord ->
-            simulatorRepository.findSimulatorByUdid(registryRecord.udid)?.let { foundSimulator ->
-                return foundSimulator
-            }
-        }
+        registeredBaseSimulator(deviceType, runtime)?.let { return it }
 
         val simulator = simulatorRepository.createSimulator(deviceType.name, deviceType, runtime)
             ?: throw RuntimeException("Failed to create base simulator with deviceName: ${desiredCaps.model ?: "null"}, deviceType: ${deviceType}, runtime: $runtime")
@@ -66,7 +59,7 @@ class SimulatorProvider(
 
         val deviceType: DeviceType = desiredCaps.toDeviceType(simulatorRepository)
         val runtime: SimulatorRuntime = desiredCaps.toRuntime(simulatorRepository)
-        val baseSimulator: Simulator = simulatorRegistry.getBaseSimulators().find { it.deviceTypeIdentifier == deviceType.identifier && it.runtimeIdentifier == runtime.runtimeIdentifier }
+        val baseSimulator: Simulator = registeredBaseSimulator(deviceType, runtime)
             ?: if (createMissingBaseSimulators) {
                 // A laptop that never had this model and OS (or a new Xcode) gets its base simulator now
                 createBaseSimulator(desiredCaps).also { logger.info("Created base simulator ${it.udid} for $deviceType and $runtime") }
@@ -120,6 +113,27 @@ class SimulatorProvider(
             clonedSimulators = simulatorRegistry.getClonedSimulators(),
             allSimulators = simulatorRepository.listDevices().values.flatten().toSet()
         )
+    }
+
+    /**
+     * The registered base simulator for [deviceType] and [runtime], checked against simctl on every request: one
+     * deleted with `simctl delete`, or left without its data directory, is forgotten so a laptop creates a new one.
+     */
+    private fun registeredBaseSimulator(deviceType: DeviceType, runtime: SimulatorRuntime): Simulator? {
+        val record = simulatorRegistry.getBaseSimulators().find {
+            it.deviceTypeIdentifier == deviceType.identifier && it.runtimeIdentifier == runtime.runtimeIdentifier
+        } ?: return null
+
+        val simulator = simulatorRepository.findSimulatorByUdid(record.udid)
+        if (simulator != null && File(simulator.dataPath).isDirectory) {
+            return simulator
+        }
+
+        // simctl clone of a simulator without data/ fails with "Device was allocated but was stuck in creation state"
+        val problem = if (simulator == null) "no longer exists" else "has no data directory ${simulator.dataPath}"
+        logger.warn("Base simulator ${record.udid} for $deviceType and $runtime $problem. Forgetting it")
+        simulatorRegistry.removeSimulator(record.udid)
+        return null
     }
 
     private fun provideSimulatorByUdid(usedUdids: Set<String>, udid: String, simulators: List<Simulator>): Simulator {
